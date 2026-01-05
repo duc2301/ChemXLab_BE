@@ -1,0 +1,6 @@
+@ChemXLabWebAPI_HostAddress = http://localhost:5097
+
+GET {{ChemXLabWebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
