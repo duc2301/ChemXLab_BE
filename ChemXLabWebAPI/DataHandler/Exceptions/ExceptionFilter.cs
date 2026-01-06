@@ -13,7 +13,7 @@ namespace ChemXLabWebAPI.DataHandler.Exceptions
             {
                 context.Result = new ObjectResult(new
                 {
-                    success = false,
+                    isSuccess = false,
                     statusCode = ex.StatusCode,
                     message = ex.Message,
                     data = (object?)null
