@@ -1,6 +1,6 @@
 <Solution>
-  <Project Path="D:/Ki8/Exe201/BE/ChemXLab_BE/Application/Application.csproj" />
-  <Project Path="D:/Ki8/Exe201/BE/ChemXLab_BE/ChemXLabWebAPI/ChemXLabWebAPI.csproj" />
-  <Project Path="D:/Ki8/Exe201/BE/ChemXLab_BE/Domain/Domain.csproj" />
-  <Project Path="D:/Ki8/Exe201/BE/ChemXLab_BE/Infrastructure/Infrastructure.csproj" />
+  <Project Path="Application/Application.csproj" />
+  <Project Path="ChemXLabWebAPI/ChemXLabWebAPI.csproj" />
+  <Project Path="Domain/Domain.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" />
 </Solution>
