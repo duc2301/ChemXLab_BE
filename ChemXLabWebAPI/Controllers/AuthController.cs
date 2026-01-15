@@ -22,5 +22,12 @@ namespace ChemXLabWebAPI.Controllers
             var result = await _authService.Login(loginDTO);
             return Ok(ApiResponse.Success("Login successful", result));
         }
+
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        {
+            var result = await _authService.Register(registerDTO);
+            return Ok(ApiResponse.Success("Registration successful", result));
+        }
     }
 }

@@ -4,6 +4,7 @@ using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
 using ChemXLabWebAPI.DataHandler.ExceptionMidleware;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,6 +30,19 @@ namespace Application.Services
                 throw new ApiExceptionResponse("Invalid email or password");
             }
             return _mapper.Map<UserResponseDTO>(user);
+        }
+        
+        public async Task<UserResponseDTO> Register(RegisterDTO request)
+        {
+            var checkEmailExist = await _unitOfWork.UserRepository.GetByEmail(request.Email);
+            if (checkEmailExist)
+            {
+                throw new ApiExceptionResponse("Email already in use");
+            }
+            var newUser = _mapper.Map<User>(request);
+            await _unitOfWork.UserRepository.CreateAsync(newUser);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<UserResponseDTO>(newUser);
         }
     }
 }

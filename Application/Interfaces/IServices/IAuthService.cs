@@ -9,5 +9,6 @@ namespace Application.Interfaces.IServices
     public interface IAuthService
     {
         Task<UserResponseDTO> Login(LoginDTO request);
+        Task<UserResponseDTO> Register(RegisterDTO request);
     }
 }

@@ -1,4 +1,5 @@
 ﻿
+using Application.DTOs.RequestDTOs.Auth;
 using Application.DTOs.ResponseDTOs.User;
 using AutoMapper;
 using Domain.Entities;
@@ -10,6 +11,7 @@ namespace Application.Mapping
         public MappingProfile()
         {
             CreateMap<User, UserResponseDTO>().ReverseMap();
+            CreateMap<RegisterDTO, User>().ReverseMap();
         }
     }
 }
