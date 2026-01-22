@@ -21,6 +21,9 @@ namespace Infrastructure.UnitOfWorks
         private IUserRepository _userRepository;
         public IUserRepository UserRepository => _userRepository ??= new UserRepository(_context);
 
+        private IPaymentRepository _paymentRepository;
+        public IPaymentRepository PaymentRepository => _paymentRepository ??= new PaymentRepository(_context);
+
 
         public async Task<int> SaveChangesAsync()
         {

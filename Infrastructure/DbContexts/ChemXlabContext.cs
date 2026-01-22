@@ -28,6 +28,8 @@ public partial class ChemXlabContext : DbContext
 
     public virtual DbSet<Package> Packages { get; set; }
 
+    public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+
     public virtual DbSet<Reaction> Reactions { get; set; }
 
     public virtual DbSet<ReactionComponent> ReactionComponents { get; set; }
@@ -40,13 +42,11 @@ public partial class ChemXlabContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=ChemXLab;Username=postgres;Password=12345");
+        => optionsBuilder.UseNpgsql("Host=localhost; Port=5432; Database=ChemXLab; Username=postgres; Password=12345; TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .HasPostgresEnum("component_role", new[] { "REACTANT", "PRODUCT", "CATALYST" })
-            .HasPostgresEnum("user_role", new[] { "STUDENT", "TEACHER", "ADMIN", "ORG_MANAGER" })
             .HasPostgresExtension("pgcrypto")
             .HasPostgresExtension("uuid-ossp");
 
@@ -204,6 +204,50 @@ public partial class ChemXlabContext : DbContext
                 .HasColumnName("price");
         });
 
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("payment_transactions_pkey");
+
+            entity.ToTable("payment_transactions");
+
+            entity.HasIndex(e => e.TransactionCode, "payment_transactions_transaction_code_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("uuid_generate_v4()")
+                .HasColumnName("id");
+            entity.Property(e => e.Amount)
+                .HasPrecision(12, 2)
+                .HasColumnName("amount");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Currency)
+                .HasMaxLength(3)
+                .HasDefaultValueSql("'VND'::character varying")
+                .HasColumnName("currency");
+            entity.Property(e => e.PackageId).HasColumnName("package_id");
+            entity.Property(e => e.PaymentMethod)
+                .HasMaxLength(50)
+                .HasColumnName("payment_method");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValueSql("'PENDING'::character varying")
+                .HasColumnName("status");
+            entity.Property(e => e.TransactionCode)
+                .HasMaxLength(100)
+                .HasColumnName("transaction_code");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Package).WithMany(p => p.PaymentTransactions)
+                .HasForeignKey(d => d.PackageId)
+                .HasConstraintName("payment_transactions_package_id_fkey");
+
+            entity.HasOne(d => d.User).WithMany(p => p.PaymentTransactions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("payment_transactions_user_id_fkey");
+        });
+
         modelBuilder.Entity<Reaction>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("reactions_pkey");
@@ -230,6 +274,8 @@ public partial class ChemXlabContext : DbContext
 
             entity.ToTable("reaction_components");
 
+            entity.HasIndex(e => new { e.ChemicalId, e.Role }, "idx_reaction_chem");
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("uuid_generate_v4()")
                 .HasColumnName("id");
@@ -238,6 +284,9 @@ public partial class ChemXlabContext : DbContext
                 .HasDefaultValue(1)
                 .HasColumnName("coefficient");
             entity.Property(e => e.ReactionId).HasColumnName("reaction_id");
+            entity.Property(e => e.Role)
+                .HasMaxLength(20)
+                .HasColumnName("role");
             entity.Property(e => e.StateInReaction)
                 .HasMaxLength(20)
                 .HasColumnName("state_in_reaction");
@@ -338,6 +387,10 @@ public partial class ChemXlabContext : DbContext
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
+            entity.Property(e => e.Role)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("'STUDENT'::character varying")
+                .HasColumnName("role");
         });
 
         OnModelCreatingPartial(modelBuilder);

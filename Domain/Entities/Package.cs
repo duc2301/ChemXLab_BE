@@ -15,5 +15,7 @@ public partial class Package
 
     public string? Features { get; set; }
 
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+
     public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
 }

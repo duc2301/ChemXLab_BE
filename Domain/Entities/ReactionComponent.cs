@@ -11,6 +11,8 @@ public partial class ReactionComponent
 
     public Guid? ChemicalId { get; set; }
 
+    public string Role { get; set; } = null!;
+
     public int? Coefficient { get; set; }
 
     public string? StateInReaction { get; set; }

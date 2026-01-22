@@ -14,7 +14,7 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<bool> GetByEmail(string email)
+        public async Task<bool> CheckEmailExist(string email)
         {
             var user = await _context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
             return user != null;
@@ -23,6 +23,11 @@ namespace Infrastructure.Repositories
         public async Task<User?> Login(LoginDTO request)
         {
             return await _context.Users.Where(u => u.Email == request.Email && u.PasswordHash == request.Password).FirstOrDefaultAsync();
+        }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
         }
     }
 }

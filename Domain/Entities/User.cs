@@ -13,6 +13,8 @@ public partial class User
 
     public string? FullName { get; set; }
 
+    public string? Role { get; set; }
+
     public string? AvatarUrl { get; set; }
 
     public DateTime? CreatedAt { get; set; }
@@ -22,6 +24,8 @@ public partial class User
     public virtual ICollection<ClassMember> ClassMembers { get; set; } = new List<ClassMember>();
 
     public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
+
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ICollection<Submission> Submissions { get; set; } = new List<Submission>();
 
