@@ -5,22 +5,38 @@ CREATE DATABASE "ChemXLab";
 -- ==========================================
 --TẠO EXTENSION & BẢNG
 -- ==========================================
+-- ==========================================
+-- 1. KHỞI TẠO DATABASE
+-- ==========================================
+-- (Bỏ comment dòng dưới nếu chưa tạo DB)
+-- DROP DATABASE IF EXISTS "ChemXLab";
+-- CREATE DATABASE "ChemXLab";
+
+-- ==========================================
+-- 2. TẠO EXTENSION & DỌN DẸP
+-- ==========================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Xóa bảng cũ nếu có để làm sạch
+-- Xóa bảng cũ để làm sạch (theo thứ tự khóa ngoại)
 DROP TABLE IF EXISTS submissions, assignments, class_members, classes, reaction_components, reactions, chemicals, elements, subscriptions, packages, users CASCADE;
+
+-- Xóa các Type Enum cũ (nếu còn sót lại)
 DROP TYPE IF EXISTS user_role, component_role CASCADE;
 
--- MODULE 1: AUTH & USERS
-CREATE TYPE user_role AS ENUM ('STUDENT', 'TEACHER', 'ADMIN', 'ORG_MANAGER');
+-- ==========================================
+-- 3. TẠO BẢNG (MODULES)
+-- ==========================================
 
+-- MODULE 1: AUTH & USERS
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100),
-    role user_role DEFAULT 'STUDENT',
+    -- [UPDATED] Dùng VARCHAR thay vì ENUM để dễ Scaffold
+    -- Các giá trị gợi ý: 'ADMIN', 'TEACHER', 'STUDENT', 'ORG_MANAGER'
+    role VARCHAR(50) DEFAULT 'STUDENT', 
     avatar_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -55,13 +71,12 @@ CREATE TABLE reactions (
     visual_config JSONB 
 );
 
-CREATE TYPE component_role AS ENUM ('REACTANT', 'PRODUCT', 'CATALYST');
-
 CREATE TABLE reaction_components (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     reaction_id UUID REFERENCES reactions(id) ON DELETE CASCADE,
     chemical_id UUID REFERENCES chemicals(id),
-    role component_role NOT NULL,
+    -- Các giá trị gợi ý: 'REACTANT', 'PRODUCT', 'CATALYST'
+    role VARCHAR(20) NOT NULL, 
     coefficient INT DEFAULT 1,
     state_in_reaction VARCHAR(20)
 );
@@ -122,13 +137,13 @@ CREATE TABLE subscriptions (
 );
 
 -- ==========================================
--- INSERT DATA (Đã sửa lỗi trùng lặp)
+-- 4. INSERT DATA (MẪU)
 -- ==========================================
 
 -- A. USERS
 INSERT INTO users (email, password_hash, full_name, role) VALUES 
-('admin@chemxlab.com', 1, 'System Admin', 'ADMIN'),
-('student@chemxlab.com', 1, 'Nguyen Van A', 'STUDENT');
+('admin@chemxlab.com', 'hashed_pass_1', 'System Admin', 'ADMIN'),
+('student@chemxlab.com', 'hashed_pass_2', 'Nguyen Van A', 'STUDENT');
 
 -- B. ELEMENTS (Bảng tuần hoàn 118 nguyên tố)
 INSERT INTO elements (id, symbol, name, atomic_mass, properties) VALUES

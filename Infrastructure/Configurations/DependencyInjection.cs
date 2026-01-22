@@ -29,6 +29,10 @@ namespace Infrastructure.Configurations
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IRedisService, RedisService>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IPaymentService, PaymentService>();  
 
 
             services.AddScoped<IUserRepository, UserRepository>();
