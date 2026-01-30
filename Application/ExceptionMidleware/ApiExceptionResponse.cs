@@ -1,4 +1,4 @@
-﻿namespace ChemXLabWebAPI.DataHandler.ExceptionMidleware
+﻿namespace Application.ExceptionMidleware
 {
     public class ApiExceptionResponse : Exception
     {

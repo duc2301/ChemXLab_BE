@@ -1,13 +1,14 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.DTOs.RequestDTOs.Payment;
+using Application.DTOs.RequestDTOs.Sepay;
 using Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/payments")]
     [ApiController]
-    public class PaymentController : Controller
+    public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
 
@@ -16,25 +17,40 @@ namespace ChemXLabWebAPI.Controllers
             _paymentService = paymentService;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDTO request)
+        {
+            var result = await _paymentService.CreatePaymentAsync(request);
+            return Ok(ApiResponse.Success("Payment created successfully", result));
+        }
+
         [HttpGet]
-        public async Task<IActionResult> GetAllPayment()
+        public async Task<IActionResult> GetAllPayments()
         {
             var result = await _paymentService.GetAllPaymentsAsync();
-            return Ok(ApiResponse.Success("Get all payment successful", result));
+            return Ok(ApiResponse.Success("Get all payments successfully", result));
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPaymentById(Guid id)
+        [HttpPut("{id}/cancel")]
+        public async Task<IActionResult> CancelPayment(Guid id)
         {
-            var result = await _paymentService.GetPaymentByIdAsync(id);
-            return Ok(ApiResponse.Success("Get payment by id successful", result));
+            var success = await _paymentService.CancelPaymentAsync(id);
+            if (!success)
+                return NotFound(ApiResponse.Fail("Payment not found"));
+
+            return Ok(ApiResponse.Success("Payment cancelled successfully"));
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDTO requestDTO)
+
+        [HttpPost("sepay/webhook")]
+        public async Task<IActionResult> SePayWebhook([FromBody] SePayWebhookDTO dto)
         {
-            var result = await _paymentService.CreatePaymentAsync(requestDTO);
-            return Ok(ApiResponse.Success("Payment created successfully", result));
+            var success = await _paymentService.ConfirmPaymentAsync(dto);
+
+            if (!success)
+                return BadRequest("Payment confirmation failed");
+
+            return Ok("OK");
         }
     }
 }

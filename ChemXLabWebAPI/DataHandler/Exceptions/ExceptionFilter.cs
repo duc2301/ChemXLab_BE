@@ -1,5 +1,5 @@
 ﻿using Application.DTOs.ApiResponseDTO;
-using ChemXLabWebAPI.DataHandler.ExceptionMidleware;
+using Application.ExceptionMidleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

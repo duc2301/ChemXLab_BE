@@ -17,6 +17,12 @@ public partial class PaymentTransaction
 
     public string? PaymentMethod { get; set; }
 
+    public string? Qrurl { get; set; }
+
+    public string? Description { get; set; }
+
+    public DateTime? PaidAt { get; set; }
+
     public string? Status { get; set; }
 
     public string? TransactionCode { get; set; }

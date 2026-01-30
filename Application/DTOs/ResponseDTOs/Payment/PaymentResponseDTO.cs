@@ -21,6 +21,8 @@ namespace Application.DTOs.ResponseDTOs.Payment
 
         public string? Status { get; set; }
 
+        public string? QrUrl { get; set; }
+
         public string? TransactionCode { get; set; }
 
     }
