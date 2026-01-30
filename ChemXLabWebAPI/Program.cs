@@ -1,3 +1,4 @@
+using Application.DTOs.RequestDTOs.Sepay;
 using ChemXLabWebAPI.DataHandler.Exceptions;
 using ChemXLabWebAPI.Extensions;
 using Infrastructure.Configurations;
@@ -32,6 +33,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddInfrastructureService(builder.Configuration);
 builder.Services.AddGlobalValidation(builder.Configuration);
+
+builder.Services.Configure<SePaySettings>(
+    builder.Configuration.GetSection("SePay"));
+
 
 
 var app = builder.Build();

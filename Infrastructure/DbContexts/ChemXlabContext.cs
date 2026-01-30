@@ -40,9 +40,9 @@ public partial class ChemXlabContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost; Port=5432; Database=ChemXLab; Username=postgres; Password=12345; TrustServerCertificate=True;");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseNpgsql("Host=localhost; Port=5432; Database=ChemXLab; Username=postgres; Password=12345; TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -226,10 +226,19 @@ public partial class ChemXlabContext : DbContext
                 .HasMaxLength(3)
                 .HasDefaultValueSql("'VND'::character varying")
                 .HasColumnName("currency");
+            entity.Property(e => e.Description)
+                .HasColumnType("character varying")
+                .HasColumnName("description");
             entity.Property(e => e.PackageId).HasColumnName("package_id");
+            entity.Property(e => e.PaidAt)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("paid_at");
             entity.Property(e => e.PaymentMethod)
                 .HasMaxLength(50)
                 .HasColumnName("payment_method");
+            entity.Property(e => e.Qrurl)
+                .HasColumnType("character varying")
+                .HasColumnName("qrurl");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'PENDING'::character varying")

@@ -1,9 +1,9 @@
 ﻿using Application.DTOs.RequestDTOs.Auth;
 using Application.DTOs.ResponseDTOs.User;
+using Application.ExceptionMidleware;
 using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
-using ChemXLabWebAPI.DataHandler.ExceptionMidleware;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;

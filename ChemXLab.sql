@@ -137,6 +137,69 @@ CREATE TABLE subscriptions (
 );
 
 -- ==========================================
+-- E. PAYMENT MODULE EXPANSION (BỔ SUNG)
+-- ==========================================
+
+-- 1. TẠO BẢNG LỊCH SỬ GIAO DỊCH (Transaction History)
+-- Bảng này giúp lưu lại log khi user thanh toán qua cổng (VNPAY, MoMo, PayPal)
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id),
+    package_id INT REFERENCES packages(id),
+    amount DECIMAL(12, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'VND',
+    payment_method VARCHAR(50), -- Ví dụ: 'VNPAY', 'MOMO', 'CREDIT_CARD'
+	QrUrl VARCHAR,
+	Description VARCHAR,
+	Paid_at TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'PENDING', -- 'SUCCESS', 'FAILED', 'PENDING'
+    transaction_code VARCHAR(100) UNIQUE, -- Mã giao dịch từ cổng thanh toán trả về
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. INSERT DỮ LIỆU GÓI DỊCH VỤ (PACKAGES)
+-- Xóa dữ liệu cũ để tránh trùng lặp khi chạy lại script
+TRUNCATE TABLE packages CASCADE;
+
+INSERT INTO packages (id, name, price, duration_days, features) VALUES
+(1, 'Free Starter', 0, 3650, '{"lab_access": "basic", "max_projects": 3, "support": "community"}'),
+(2, 'Student Pro', 50000, 30, '{"lab_access": "full", "max_projects": 50, "support": "email", "advanced_chemicals": true}'),
+(3, 'Teacher Premium', 450000, 365, '{"lab_access": "unlimited", "max_classes": 10, "analytics": true, "export_reports": true}');
+
+-- 3. INSERT DỮ LIỆU ĐĂNG KÝ (SUBSCRIPTIONS)
+-- Giả lập: Admin dùng gói Teacher, Student dùng gói Student Pro
+
+INSERT INTO subscriptions (user_id, package_id, start_date, end_date, is_active)
+SELECT 
+    id as user_id,
+    3 as package_id, -- Admin dùng gói Teacher
+    CURRENT_TIMESTAMP as start_date,
+    CURRENT_TIMESTAMP + INTERVAL '1 year' as end_date,
+    TRUE
+FROM users WHERE email = 'admin@chemxlab.com';
+
+INSERT INTO subscriptions (user_id, package_id, start_date, end_date, is_active)
+SELECT 
+    id as user_id,
+    2 as package_id, -- Student dùng gói Student Pro
+    CURRENT_TIMESTAMP as start_date,
+    CURRENT_TIMESTAMP + INTERVAL '30 days' as end_date,
+    TRUE
+FROM users WHERE email = 'student@chemxlab.com';
+
+-- 4. INSERT DỮ LIỆU LỊCH SỬ GIAO DỊCH (TRANSACTIONS)
+-- Giả lập lịch sử thanh toán thành công
+INSERT INTO payment_transactions (user_id, package_id, amount, payment_method, status, transaction_code)
+SELECT 
+    id, 
+    2, -- Gói Student
+    50000, 
+    'MOMO', 
+    'SUCCESS', 
+    'MOMO123456789' 
+FROM users WHERE email = 'student@chemxlab.com';
+
+-- ==========================================
 -- 4. INSERT DATA (MẪU)
 -- ==========================================
 
@@ -409,3 +472,5 @@ INSERT INTO reaction_components (reaction_id, chemical_id, role, coefficient, st
 ((SELECT id FROM r), (SELECT id FROM chemicals WHERE formula = 'Fe'), 'REACTANT', 2, 'SOLID'),
 ((SELECT id FROM r), (SELECT id FROM chemicals WHERE formula = 'Cl2'), 'REACTANT', 3, 'GAS'),
 ((SELECT id FROM r), (SELECT id FROM chemicals WHERE formula = 'FeCl3'), 'PRODUCT', 2, 'SOLID');
+
+select * from users
