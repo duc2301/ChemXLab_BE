@@ -8,5 +8,9 @@
         void Update(T entity);
         void Delete(T entity);
         void DeleteById(Guid id);
+
+        // int 
+        Task<T?> GetByIdAsync(int id);
+        void DeleteById(int id);
     }
 }
