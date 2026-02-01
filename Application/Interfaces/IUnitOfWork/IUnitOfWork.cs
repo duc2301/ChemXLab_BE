@@ -9,6 +9,7 @@ namespace Application.Interfaces.IUnitOfWork
     {
         IUserRepository UserRepository { get; }
         IPaymentRepository PaymentRepository { get; }
+        IPackageRepository PackageRepository { get; }
         Task<int> SaveChangesAsync();
         Task CommitAsync();
     }

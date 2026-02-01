@@ -1,7 +1,11 @@
 using Application.DTOs.RequestDTOs.Sepay;
+using Application.Interfaces.IServices;
+using Application.Interfaces.IUnitOfWork;
+using Application.Services;
 using ChemXLabWebAPI.DataHandler.Exceptions;
 using ChemXLabWebAPI.Extensions;
 using Infrastructure.Configurations;
+using Infrastructure.UnitOfWorks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +41,8 @@ builder.Services.AddGlobalValidation(builder.Configuration);
 builder.Services.Configure<SePaySettings>(
     builder.Configuration.GetSection("SePay"));
 
-
-
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IPackageService, PackageService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
