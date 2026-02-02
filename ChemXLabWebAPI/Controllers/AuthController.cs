@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
 {
+    /// <summary>
+    /// Manages user authentication and account registration.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : Controller
@@ -16,6 +19,11 @@ namespace ChemXLabWebAPI.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Authenticates a user and generates an access token.
+        /// </summary>
+        /// <returns>The JWT token and user information upon successful login.</returns>
+        /// <response code="200">Login successful.</response>
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
@@ -23,6 +31,11 @@ namespace ChemXLabWebAPI.Controllers
             return Ok(ApiResponse.Success("Login successful", result));
         }
 
+        /// <summary>
+        /// Registers a new user account in the system.
+        /// </summary>
+        /// <returns>The created user profile details.</returns>
+        /// <response code="200">Registration successful.</response>
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
         {

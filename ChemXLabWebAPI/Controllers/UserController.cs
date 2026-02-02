@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
 {
+    /// <summary>
+    /// Manages user accounts and profile information.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : Controller
@@ -15,6 +18,11 @@ namespace ChemXLabWebAPI.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Retrieves a list of all users registered in the system.
+        /// </summary>
+        /// <returns>A list of user profiles.</returns>
+        /// <response code="200">Request successful, returns the list of users.</response>
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {

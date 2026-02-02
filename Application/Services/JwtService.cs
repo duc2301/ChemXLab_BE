@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Application.Services
 {
+    /// <summary>
+    /// Service responsible for generating JSON Web Tokens (JWT) for authentication.
+    /// </summary>
     public class JwtService : IJwtService
     {
         private readonly string _key;
@@ -23,6 +26,11 @@ namespace Application.Services
             _expireMinutes = int.Parse(config["Jwt:ExpireMinutes"]);
         }
 
+        /// <summary>
+        /// Generates a signed JWT for the specified user.
+        /// </summary>
+        /// <param name="user">The user entity for whom the token is generated.</param>
+        /// <returns>A string representation of the JWT containing user claims.</returns>
         public string GenerateToken(User user)
         {
             if (user == null) return null;

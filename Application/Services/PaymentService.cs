@@ -15,6 +15,9 @@ using System.Web;
 
 namespace Application.Services
 {
+    /// <summary>
+    /// Service responsible for handling payment transactions and integration with the SePay gateway.
+    /// </summary>
     public class PaymentService : IPaymentService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -31,6 +34,11 @@ namespace Application.Services
             _sePaySettings = sePayOptions.Value;
         }
 
+        /// <summary>
+        /// Initiates a new payment transaction and generates a QR code URL.
+        /// </summary>
+        /// <param name="request">The payment creation details.</param>
+        /// <returns>The created payment transaction details including the QR URL.</returns>
         public async Task<PaymentResponseDTO> CreatePaymentAsync(CreatePaymentDTO request)
         {
             var transactionCode = $"CX_{Guid.NewGuid():N}".Substring(0, 10);
@@ -57,6 +65,9 @@ namespace Application.Services
             return _mapper.Map<PaymentResponseDTO>(payment);
         }
 
+        /// <summary>
+        /// Generates the SePay QR code URL based on transaction details.
+        /// </summary>
         private string GenerateSePayQr(PaymentTransaction payment)
         {
             var encodedDesc = HttpUtility.UrlEncode(payment.TransactionCode);
@@ -69,6 +80,11 @@ namespace Application.Services
                    $"&template=compact";
         }
 
+        /// <summary>
+        /// Verifies and confirms a payment based on the Webhook data received from SePay.
+        /// </summary>
+        /// <param name="dto">The webhook data payload.</param>
+        /// <returns>True if the payment is successfully confirmed, otherwise False.</returns>
         public async Task<bool> ConfirmPaymentAsync(SePayWebhookDTO dto)
         {
             var payment = await _unitOfWork.PaymentRepository
@@ -91,12 +107,21 @@ namespace Application.Services
             return true;
         }
 
+        /// <summary>
+        /// Retrieves the history of all payment transactions.
+        /// </summary>
+        /// <returns>A collection of payment records.</returns>
         public async Task<IEnumerable<PaymentResponseDTO>> GetAllPaymentsAsync()
         {
             var payments = await _unitOfWork.PaymentRepository.GetAllAsync();
             return payments.Select(p => _mapper.Map<PaymentResponseDTO>(p));
         }
 
+        /// <summary>
+        /// Cancels a pending payment transaction.
+        /// </summary>
+        /// <param name="id">The unique identifier of the payment to cancel.</param>
+        /// <returns>True if cancellation was successful, otherwise False.</returns>
         public async Task<bool> CancelPaymentAsync(Guid id)
         {
             var payment = await _unitOfWork.PaymentRepository.GetByIdAsync(id);
@@ -110,8 +135,12 @@ namespace Application.Services
             return true;
         }
 
+        /// <summary>
+        /// Activates the user's subscription upon successful payment.
+        /// </summary>
         private async Task ActivateSubscription(PaymentTransaction payment)
         {
+            // Logic to activate subscription (currently commented out)
             //var package = await _unitOfWork.PackageRepository
             //    .GetByIdAsync(payment.PackageId);
 
