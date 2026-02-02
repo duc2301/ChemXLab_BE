@@ -68,7 +68,7 @@ namespace Infrastructure.Repositories
         /// <summary>
         /// Retrieves an entity by its unique identifier (GUID).
         /// </summary>
-        public async Task<T?> GetByIdAsync(Guid id)
+        public async Task<T?> GetByIdAsync(Guid? id)
         {
             return await _context.Set<T>().FindAsync(id);
         }
@@ -76,7 +76,7 @@ namespace Infrastructure.Repositories
         /// <summary>
         /// Retrieves an entity by its integer identifier.
         /// </summary>
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int? id)
         {
             return await _context.Set<T>().FindAsync(id);
         }
