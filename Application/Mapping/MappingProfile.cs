@@ -10,28 +10,24 @@ using System.Text.Json;
 
 namespace Application.Mapping
 {
-    /// <summary>
-    /// Defines the AutoMapper configuration profiles for mapping between Domain Entities and Data Transfer Objects (DTOs).
-    /// </summary>
     public class MappingProfile : Profile
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MappingProfile"/> class and creates the object mapping rules.
-        /// </summary>
         public MappingProfile()
         {
-            // User Mappings
+            // --- User & Auth Mappings ---
             CreateMap<User, UserResponseDTO>().ReverseMap();
             CreateMap<RegisterDTO, User>().ReverseMap();
+            CreateMap<LoginDTO, User>().ReverseMap();
 
-            // Payment Mappings
+            // --- Payment Mappings ---
             CreateMap<PaymentTransaction, PaymentResponseDTO>().ReverseMap();
             CreateMap<CreatePaymentDTO, PaymentTransaction>().ReverseMap();
 
-            // Package Mappings
+            // --- Package Mappings ---
+
             CreateMap<CreatePackageDTO, Package>()
-            .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
-                src.Features != null ? JsonSerializer.Serialize(src.Features, (JsonSerializerOptions?)null) : null));
+                .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
+                    src.Features != null ? JsonSerializer.Serialize(src.Features, (JsonSerializerOptions?)null) : null));
 
             CreateMap<UpdatePackageDTO, Package>()
                 .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
@@ -40,9 +36,28 @@ namespace Application.Mapping
 
             CreateMap<Package, PackageResponseDTO>()
                 .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
-                    string.IsNullOrEmpty(src.Features)
-                        ? new List<string>()
-                        : JsonSerializer.Deserialize<List<string>>(src.Features, (JsonSerializerOptions?)null)));
+                    DeserializeFeaturesSafe(src.Features)));
+        }
+
+        private List<string> DeserializeFeaturesSafe(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return new List<string>();
+
+            try
+            {
+                json = json.Trim();
+                if (json.StartsWith("["))
+                {
+                    return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+                }
+
+                return new List<string> { json };
+            }
+            catch
+            {
+                return new List<string> { json };
+            }
         }
     }
 }
