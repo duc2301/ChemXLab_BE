@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
 {
+    /// <summary>
+    /// Handles payment transactions and Webhook integration.
+    /// </summary>
     [Route("api/payments")]
     [ApiController]
     public class PaymentController : ControllerBase
@@ -17,6 +20,11 @@ namespace ChemXLabWebAPI.Controllers
             _paymentService = paymentService;
         }
 
+        /// <summary>
+        /// Initiates a new payment transaction.
+        /// </summary>
+        /// <returns>Payment details including the QR code URL.</returns>
+        /// <response code="200">Payment initiated successfully.</response>
         [HttpPost]
         public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDTO request)
         {
@@ -24,6 +32,11 @@ namespace ChemXLabWebAPI.Controllers
             return Ok(ApiResponse.Success("Payment created successfully", result));
         }
 
+        /// <summary>
+        /// Retrieves the history of all payment transactions.
+        /// </summary>
+        /// <returns>A list of all payments.</returns>
+        /// <response code="200">Request successful, returns payment history.</response>
         [HttpGet]
         public async Task<IActionResult> GetAllPayments()
         {
@@ -31,6 +44,11 @@ namespace ChemXLabWebAPI.Controllers
             return Ok(ApiResponse.Success("Get all payments successfully", result));
         }
 
+        /// <summary>
+        /// Cancels a pending payment transaction.
+        /// </summary>
+        /// <returns>Confirmation message of cancellation.</returns>
+        /// <response code="200">Payment cancelled successfully.</response>
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> CancelPayment(Guid id)
         {
@@ -41,7 +59,11 @@ namespace ChemXLabWebAPI.Controllers
             return Ok(ApiResponse.Success("Payment cancelled successfully"));
         }
 
-
+        /// <summary>
+        /// Handles Webhook notifications from the SePay gateway.
+        /// </summary>
+        /// <returns>Standard acknowledgement response.</returns>
+        /// <response code="200">Webhook processed successfully.</response>
         [HttpPost("sepay/webhook")]
         public async Task<IActionResult> SePayWebhook([FromBody] SePayWebhookDTO dto)
         {
