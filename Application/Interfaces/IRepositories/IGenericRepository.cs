@@ -16,7 +16,7 @@
         /// Retrieves an entity by its unique identifier (GUID).
         /// </summary>
         /// <returns>The entity if found, otherwise null.</returns>
-        Task<T?> GetByIdAsync(Guid id);
+        Task<T?> GetByIdAsync(Guid? id);
 
         /// <summary>
         /// Adds a new entity to the database asynchronously.
@@ -45,7 +45,7 @@
         /// Retrieves an entity by its integer identifier.
         /// </summary>
         /// <returns>The entity if found, otherwise null.</returns>
-        Task<T?> GetByIdAsync(int id);
+        Task<T?> GetByIdAsync(int? id);
 
         /// <summary>
         /// Removes an entity by its integer identifier.

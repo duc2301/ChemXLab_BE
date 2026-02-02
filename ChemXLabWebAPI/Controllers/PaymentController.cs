@@ -3,6 +3,7 @@ using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.RequestDTOs.Sepay;
 using Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace ChemXLabWebAPI.Controllers
 {
@@ -70,9 +71,9 @@ namespace ChemXLabWebAPI.Controllers
             var success = await _paymentService.ConfirmPaymentAsync(dto);
 
             if (!success)
-                return BadRequest("Payment confirmation failed");
+                return BadRequest(ApiResponse.Fail("Paid fail"));
 
-            return Ok("OK");
+            return Ok(ApiResponse.Success("Paid successful"));
         }
     }
 }

@@ -6,11 +6,7 @@ using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
 using Domain.Entities;
 using Microsoft.Extensions.Options;
-using PayOS.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Application.Services
@@ -41,16 +37,18 @@ namespace Application.Services
         /// <returns>The created payment transaction details including the QR URL.</returns>
         public async Task<PaymentResponseDTO> CreatePaymentAsync(CreatePaymentDTO request)
         {
-            var transactionCode = $"CX_{Guid.NewGuid():N}".Substring(0, 10);
+            var paymentId = Guid.NewGuid();
+            var transactionCode = $"ChemXLab_{paymentId}";
+            var package = await _unitOfWork.PackageRepository.GetByIdAsync(request.PackageId);
 
             var payment = new PaymentTransaction
             {
-                Id = Guid.NewGuid(),
+                Id = paymentId,
                 UserId = request.UserId,
                 PackageId = request.PackageId,
-                Amount = request.Amount,
+                Amount = (int)package.Price.Value,
                 Currency = "VND",
-                PaymentMethod = "SEPAY",
+                PaymentMethod = "Bank Transfer",
                 Status = "PENDING",
                 TransactionCode = transactionCode,
                 Description = $"Thanh toan goi {request.PackageId}",
@@ -87,22 +85,43 @@ namespace Application.Services
         /// <returns>True if the payment is successfully confirmed, otherwise False.</returns>
         public async Task<bool> ConfirmPaymentAsync(SePayWebhookDTO dto)
         {
-            var payment = await _unitOfWork.PaymentRepository
-                .GetByIdAsync(dto.TransactionId);
+            PaymentTransaction? matchedPayment = null;
+            var match = Regex.Match(dto.Content, @"ChemXLab_?([a-zA-Z0-9-]+)", RegexOptions.IgnoreCase);            
 
-            if (payment == null) return false;
-            if (payment.Status == "SUCCESS") return true;
-            if (payment.Amount != dto.Amount) return false;
-            if (dto.Status != "SUCCESS") return false;
+            if (match.Success)
+            {
+                var extractedIdString = match.Groups[1].Value;
+                if (Guid.TryParse(extractedIdString, out Guid paymentId))
+                {
+                    matchedPayment = await _unitOfWork.PaymentRepository.GetByIdAsync(paymentId);
+                }
+            }
 
-            payment.Status = "SUCCESS";
-            payment.PaidAt = dto.TransactionDate;
-            //payment.TransactionCode = dto.TransactionId;
+            if (matchedPayment == null)
+            {
+                var potentialPayments = await _unitOfWork.PaymentRepository.GetPendingPaymentsByAmountAsync(dto.TransferAmount);
 
-            _unitOfWork.PaymentRepository.Update(payment);
+                if (potentialPayments.Any())
+                {
+                    matchedPayment = potentialPayments.OrderBy(p => p.CreatedAt).First();
+                }
+            }
+
+            if (matchedPayment == null)
+            {
+                return false;
+            }
+
+            if (matchedPayment.Status == "PAID") return true;
+
+            matchedPayment.Status = "PAID";
+            matchedPayment.PaidAt = dto.TransactionDate; 
+
+            _unitOfWork.PaymentRepository.Update(matchedPayment);
             await _unitOfWork.SaveChangesAsync();
 
-            await ActivateSubscription(payment);
+            // Kích hoạt dịch vụ
+            await ActivateSubscription(matchedPayment);
 
             return true;
         }

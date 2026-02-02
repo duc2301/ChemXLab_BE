@@ -19,20 +19,5 @@ namespace Application.DTOs.RequestDTOs.Payment
         /// The identifier of the subscription package being purchased.
         /// </summary>
         public int? PackageId { get; set; }
-
-        /// <summary>
-        /// The total amount to be paid.
-        /// </summary>
-        public decimal Amount { get; set; }
-
-        /// <summary>
-        /// The currency code (e.g., "VND", "USD").
-        /// </summary>
-        public string? Currency { get; set; }
-
-        /// <summary>
-        /// The selected method of payment (e.g., "BankTransfer", "CreditCard").
-        /// </summary>
-        public string? PaymentMethod { get; set; }
     }
 }

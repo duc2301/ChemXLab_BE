@@ -1,38 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.DTOs.Converter;
+using System;
+using System.Text.Json.Serialization;
 
 namespace Application.DTOs.RequestDTOs.Payment
 {
     /// <summary>
-    /// Data Transfer Object for handling Webhook data received from SePay.
+    /// DTO nhận Webhook/IPN từ SePay
     /// </summary>
     public class SePayWebhookDTO
     {
         /// <summary>
-        /// The unique transaction identifier from the payment gateway.
+        /// ID giao dịch trên hệ thống SePay
         /// </summary>
-        public Guid TransactionId { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
-        /// The content or description of the transaction (e.g., transfer memo).
+        /// Ngân hàng (VCB, ACB, MBBank, ...)
+        /// </summary>
+        public string Gateway { get; set; }
+
+        /// <summary>
+        /// Thời gian giao dịch
+        /// </summary>
+        [JsonConverter(typeof(SePayDateTimeConverter))]
+        public DateTime TransactionDate { get; set; }
+
+        /// <summary>
+        /// Số tài khoản của bạn
+        /// </summary>
+        public string AccountNumber { get; set; }
+
+        /// <summary>
+        /// Tài khoản phụ (nếu có)
+        /// </summary>
+        public string? SubAccount { get; set; }
+
+        /// <summary>
+        /// Loại giao dịch: "in" (tiền vào) hoặc "out" (tiền ra)
+        /// </summary>
+        public string TransferType { get; set; }
+
+        /// <summary>
+        /// Số tiền giao dịch (quan trọng)
+        /// </summary>
+        public decimal TransferAmount { get; set; }
+
+        /// <summary>
+        /// Số dư lũy kế
+        /// </summary>
+        public decimal Accumulated { get; set; }
+
+        /// <summary>
+        /// Mã code thanh toán (nếu dùng)
+        /// </summary>
+        public string? Code { get; set; }
+
+        /// <summary>
+        /// Nội dung chuyển khoản (quan trọng nhất)
         /// </summary>
         public string Content { get; set; }
 
         /// <summary>
-        /// The amount of money transferred.
+        /// Mã tham chiếu ngân hàng
         /// </summary>
-        public decimal Amount { get; set; }
+        public string ReferenceCode { get; set; }
 
         /// <summary>
-        /// The status of the transaction (e.g., "Success", "Failed").
+        /// Mô tả đầy đủ từ ngân hàng
         /// </summary>
-        public string Status { get; set; }
-
-        /// <summary>
-        /// The date and time when the transaction occurred.
-        /// </summary>
-        public DateTime TransactionDate { get; set; }
-        // Add other fields according to SePay IPN documentation
+        public string Description { get; set; }
     }
 }

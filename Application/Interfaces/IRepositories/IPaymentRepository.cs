@@ -10,5 +10,7 @@ namespace Application.Interfaces.IRepositories
     /// </summary>
     public interface IPaymentRepository : IGenericRepository<PaymentTransaction>
     {
+        Task<PaymentTransaction?> GetByTransactionCodeAsync(string code);
+        Task<IEnumerable<PaymentTransaction>> GetPendingPaymentsByAmountAsync(decimal amount);
     }
 }
