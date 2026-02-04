@@ -30,14 +30,16 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>Payment details including the QR code URL.</returns>
         /// <response code="200">Payment initiated successfully.</response>
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDTO request)
+        public async Task<IActionResult> CreatePayment([FromQuery] int packageId)
         {
-            var result = await _paymentService.CreatePaymentAsync(request);
+            var userId = User.FindFirst("UserId")?.Value;
+            var result = await _paymentService.CreatePaymentAsync(Guid.Parse(userId), packageId);
             return Ok(ApiResponse.Success("Payment created successfully", result));
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("My-Transaction")]
         public async Task<IActionResult> GetMyTransactions()
         {
