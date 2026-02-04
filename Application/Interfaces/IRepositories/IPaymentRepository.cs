@@ -11,6 +11,7 @@ namespace Application.Interfaces.IRepositories
     public interface IPaymentRepository : IGenericRepository<PaymentTransaction>
     {
         Task<PaymentTransaction?> GetByTransactionCodeAsync(string code);
+        Task<IEnumerable<PaymentTransaction>> GetByUserId(Guid userId);
         Task<IEnumerable<PaymentTransaction>> GetPendingPaymentsByAmountAsync(decimal amount);
     }
 }

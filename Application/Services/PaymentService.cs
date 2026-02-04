@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.RequestDTOs.Sepay;
 using Application.DTOs.ResponseDTOs.Payment;
+using Application.ExceptionMidleware;
 using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
@@ -175,6 +176,16 @@ namespace Application.Services
 
             //await _unitOfWork.SubscriptionRepository.CreateAsync(subscription);
             //await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<PaymentResponseDTO>> GetMyTransaction(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                throw new ApiExceptionResponse("User ID cannot be empty.");
+            }
+            var payment = await _unitOfWork.PaymentRepository.GetByUserId(userId);
+            return _mapper.Map<IEnumerable<PaymentResponseDTO>>(payment);
         }
     }
 }

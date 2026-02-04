@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
@@ -23,6 +24,7 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>A list of user profiles.</returns>
         /// <response code="200">Request successful, returns the list of users.</response>
+        [Authorize]
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {

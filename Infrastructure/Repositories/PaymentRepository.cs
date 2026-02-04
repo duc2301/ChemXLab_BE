@@ -21,6 +21,11 @@ namespace Infrastructure.Repositories
             return await _context.PaymentTransactions.FirstOrDefaultAsync(p =>  p.TransactionCode == code);
         }
 
+        public async Task<IEnumerable<PaymentTransaction>> GetByUserId(Guid userId)
+        {
+            return await _context.PaymentTransactions.Where(p => p.UserId == userId).ToListAsync();
+        }
+
         public async Task<IEnumerable<PaymentTransaction>> GetPendingPaymentsByAmountAsync(decimal amount)
         {
             return await _context.PaymentTransactions.Where(p => p.Status == "PENDING" && p.Amount == amount).ToListAsync();
