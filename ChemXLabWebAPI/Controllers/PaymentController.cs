@@ -2,8 +2,12 @@
 using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.RequestDTOs.Sepay;
 using Application.Interfaces.IServices;
+using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ChemXLabWebAPI.Controllers
 {
@@ -31,6 +35,15 @@ namespace ChemXLabWebAPI.Controllers
         {
             var result = await _paymentService.CreatePaymentAsync(request);
             return Ok(ApiResponse.Success("Payment created successfully", result));
+        }
+
+        //[Authorize]
+        [HttpGet("My-Transaction")]
+        public async Task<IActionResult> GetMyTransactions()
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var result = await _paymentService.GetMyTransaction(Guid.Parse(userId));
+            return Ok(ApiResponse.Success("Get my transactions successfully", result));
         }
 
         /// <summary>

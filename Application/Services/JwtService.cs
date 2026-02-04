@@ -37,7 +37,7 @@ namespace Application.Services
             if (string.IsNullOrEmpty(user.Role)) user.Role = null;
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim("UserId", user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("AvatarUrl", user.AvatarUrl ?? string.Empty),
                 new Claim("Role", user.Role.ToString()),
