@@ -11,11 +11,6 @@ namespace Application.DTOs.RequestDTOs.Payment
     public class CreatePaymentDTO
     {
         /// <summary>
-        /// The unique identifier of the user making the payment.
-        /// </summary>
-        public Guid? UserId { get; set; }
-
-        /// <summary>
         /// The identifier of the subscription package being purchased.
         /// </summary>
         public int? PackageId { get; set; }

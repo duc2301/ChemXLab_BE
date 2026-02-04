@@ -36,23 +36,28 @@ namespace Application.Services
         /// </summary>
         /// <param name="request">The payment creation details.</param>
         /// <returns>The created payment transaction details including the QR URL.</returns>
-        public async Task<PaymentResponseDTO> CreatePaymentAsync(CreatePaymentDTO request)
+        public async Task<PaymentResponseDTO> CreatePaymentAsync(Guid userId, int packageId)
         {
             var paymentId = Guid.NewGuid();
             var transactionCode = $"ChemXLab_{paymentId}";
-            var package = await _unitOfWork.PackageRepository.GetByIdAsync(request.PackageId);
+            var package = await _unitOfWork.PackageRepository.GetByIdAsync(packageId);
+
+            if (package == null)
+            {
+                throw new ApiExceptionResponse("Package not found.");
+            }
 
             var payment = new PaymentTransaction
             {
                 Id = paymentId,
-                UserId = request.UserId,
-                PackageId = request.PackageId,
+                UserId = userId,
+                PackageId = packageId,
                 Amount = (int)package.Price.Value,
                 Currency = "VND",
                 PaymentMethod = "Bank Transfer",
                 Status = "PENDING",
                 TransactionCode = transactionCode,
-                Description = $"Thanh toan goi {request.PackageId}",
+                Description = $"Thanh toan goi {package.Name}",
                 CreatedAt = DateTime.Now,
             };
 
