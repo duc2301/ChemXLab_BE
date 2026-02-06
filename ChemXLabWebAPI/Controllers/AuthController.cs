@@ -48,12 +48,37 @@ namespace ChemXLabWebAPI.Controllers
             return Ok(ApiResponse.Success("Registration successful", result));
         }
 
-        //[Authorize(Roles = "ADMIN")]
-        //[HttpGet("Sepay")]
-        //public async Task<IActionResult> GenerateSepayKey()
-        //{
-        //    string token = await _jwtService.GenerateSepayKeyAccess();
-        //    return Ok(ApiResponse.Success("Generate sepay token successful", token.ToString()));
-        //}
+        // POST: api/Auth/forgot-password
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDTO request)
+        {
+            try
+            {
+                await _authService.SendOtpAsync(request.Email);
+                return Ok(ApiResponse.Success("OTP sent to email", null));
+            }
+            catch (Exception ex) { return BadRequest(ApiResponse.Fail(ex.Message)); }
+        }
+
+        // POST: api/Auth/verify-otp (Dùng để check trước khi hiện form đổi pass)
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDTO request)
+        {
+            var isValid = await _authService.VerifyOtpAsync(request.Email, request.OtpCode);
+            if (isValid) return Ok(ApiResponse.Success("OTP Valid", true));
+            return BadRequest(ApiResponse.Fail("Invalid OTP"));
+        }
+
+        // POST: api/Auth/reset-password (Đổi pass sau khi có OTP)
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO request)
+        {
+            try
+            {
+                await _authService.ResetPasswordAsync(request);
+                return Ok(ApiResponse.Success("Password reset successfully. Please login.", null));
+            }
+            catch (Exception ex) { return BadRequest(ApiResponse.Fail(ex.Message)); }
+        }
     }
 }
