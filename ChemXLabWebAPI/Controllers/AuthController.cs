@@ -1,6 +1,8 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.DTOs.RequestDTOs.Auth;
 using Application.Interfaces.IServices;
+using Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
@@ -13,11 +15,14 @@ namespace ChemXLabWebAPI.Controllers
     public class AuthController : Controller
     {
         private readonly IAuthService _authService;
+        private readonly IJwtService _jwtService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IJwtService jwtService)
         {
             _authService = authService;
+            _jwtService = jwtService;
         }
+
 
         /// <summary>
         /// Authenticates a user and generates an access token.
@@ -42,5 +47,13 @@ namespace ChemXLabWebAPI.Controllers
             var result = await _authService.Register(registerDTO);
             return Ok(ApiResponse.Success("Registration successful", result));
         }
+
+        //[Authorize(Roles = "ADMIN")]
+        //[HttpGet("Sepay")]
+        //public async Task<IActionResult> GenerateSepayKey()
+        //{
+        //    string token = await _jwtService.GenerateSepayKeyAccess();
+        //    return Ok(ApiResponse.Success("Generate sepay token successful", token.ToString()));
+        //}
     }
 }

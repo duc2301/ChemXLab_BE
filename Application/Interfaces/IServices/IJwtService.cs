@@ -15,5 +15,6 @@ namespace Application.Interfaces.IServices
         /// </summary>
         /// <returns>The generated token string.</returns>
         string GenerateToken(User user);
+        Task<string> GenerateSepayKeyAccess();
     }
 }

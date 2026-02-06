@@ -46,6 +46,9 @@ namespace Infrastructure.Configurations
 
             services.AddScoped<IUserRepository, UserRepository>();
 
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionService, SubsctiptionService>();
+
             return services;
         }
     }

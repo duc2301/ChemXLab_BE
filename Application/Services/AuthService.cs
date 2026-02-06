@@ -5,6 +5,7 @@ using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
 using Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -61,6 +62,6 @@ namespace Application.Services
             await _unitOfWork.UserRepository.CreateAsync(newUser);
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<UserResponseDTO>(newUser);
-        }
+        }        
     }
 }
