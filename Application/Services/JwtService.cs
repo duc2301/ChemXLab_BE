@@ -34,13 +34,13 @@ namespace Application.Services
         public string GenerateToken(User user)
         {
             if (user == null) return null;
-            if (string.IsNullOrEmpty(user.Role)) user.Role = null;
+            string userRole = !string.IsNullOrEmpty(user.Role) ? user.Role : "Student";
             var claims = new[]
             {
-                new Claim("UserId", user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("AvatarUrl", user.AvatarUrl ?? string.Empty),
-                new Claim("Role", user.Role.ToString()),
+                new Claim(ClaimTypes.Role, userRole),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
