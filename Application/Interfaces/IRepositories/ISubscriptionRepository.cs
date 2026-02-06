@@ -7,6 +7,7 @@ namespace Application.Interfaces.IRepositories
 {
     public interface ISubscriptionRepository : IGenericRepository<Subscription>
     {
+        Task ExspireSubscription();
         Task<IEnumerable<Subscription>> getMySubscription(Guid value);
     }
 }

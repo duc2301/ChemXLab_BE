@@ -16,6 +16,18 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task ExpirePendingPaymentsAsync()
+        {
+            var listExspirePayment = await _context.PaymentTransactions
+                .Where(p => p.Status == "PENDING" && p.CreatedAt <= DateTime.Now.AddMinutes(-5))
+                .ToListAsync();
+
+            foreach (var payment in listExspirePayment)
+            {
+                payment.Status = "EXPIRED";
+            }
+        }
+
         public async Task<PaymentTransaction?> GetByTransactionCodeAsync(string code)
         {
             return await _context.PaymentTransactions.FirstOrDefaultAsync(p =>  p.TransactionCode == code);

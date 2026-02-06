@@ -60,6 +60,12 @@ namespace Application.Services
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
 
+        public async Task ExspireSubscription()
+        {
+            await _unitOfWork.SubscriptionRepository.ExspireSubscription();
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<SubscriptionResponseDTO>> MySubscription(Guid? userId)
         {
             var subscription = await _unitOfWork.SubscriptionRepository.getMySubscription(userId.Value);

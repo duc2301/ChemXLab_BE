@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.IRepositories;
+﻿using Application.BackgroundServices;
+using Application.Interfaces.IRepositories;
 using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using Application.Mapping;
@@ -64,6 +65,9 @@ namespace Infrastructure.Configurations
 
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionService, SubsctiptionService>();
+
+            services.AddHostedService<PaymentBackrgroundService>();
+            services.AddHostedService<SubscriptionBackgroundService>();
 
             return services;
         }
