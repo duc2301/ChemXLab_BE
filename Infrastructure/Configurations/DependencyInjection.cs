@@ -6,6 +6,7 @@ using Application.Mapping;
 using Application.Services;
 using Infrastructure.DbContexts;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Infrastructure.UnitOfWorks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -52,6 +53,7 @@ namespace Infrastructure.Configurations
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             // Đăng ký RedisService (Wrapper cho IDistributedCache)
             services.AddScoped<IRedisService, RedisService>();

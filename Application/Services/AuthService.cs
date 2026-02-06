@@ -5,10 +5,9 @@ using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
 using Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
+using BCrypt.Net;
 
 namespace Application.Services
 {
@@ -21,21 +20,29 @@ namespace Application.Services
         private readonly IJwtService _jwtService;
         private readonly IMapper _mapper;
         private readonly IRedisService _redisService;
+        private readonly IEmailService _emailService;
 
-        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper, IRedisService redisService)
+        // Inject services into Constructor
+        public AuthService(
+            IUnitOfWork unitOfWork,
+            IJwtService jwtService,
+            IMapper mapper,
+            IRedisService redisService,
+            IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
             _mapper = mapper;
             _redisService = redisService;
+            _emailService = emailService;
         }
 
         /// <summary>
         /// Authenticates a user based on email and password.
         /// </summary>
-        /// <param name="request">The login credentials (email and password).</param>
+        /// <param name="loginDTO">The login credentials (email and password).</param>
         /// <returns>A JWT string if authentication is successful.</returns>
-        /// <exception cref="ApiExceptionResponse">Thrown when the email or password is incorrect.</exception>
+        /// <exception cref="Exception">Thrown when the email or password is incorrect.</exception>
         public async Task<string> Login(LoginDTO loginDTO)
         {
             var user = await _unitOfWork.UserRepository.GetUserByEmail(loginDTO.Email);
@@ -51,9 +58,9 @@ namespace Application.Services
         /// <summary>
         /// Registers a new user in the system.
         /// </summary>
-        /// <param name="request">The user registration details.</param>
+        /// <param name="registerDTO">The user registration details.</param>
         /// <returns>The profile information of the newly created user.</returns>
-        /// <exception cref="ApiExceptionResponse">Thrown when the provided email address is already in use.</exception>
+        /// <exception cref="Exception">Thrown when the provided email address is already in use.</exception>
         public async Task<UserResponseDTO> Register(RegisterDTO registerDTO)
         {
             if (await _unitOfWork.UserRepository.CheckEmailExist(registerDTO.Email))
@@ -65,6 +72,7 @@ namespace Application.Services
             user.Role = "STUDENT";
 
             // HASH PASSWORD
+            // Lưu ý: Đảm bảo field này khớp với DTO (Password hoặc PasswordHash)
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDTO.PasswordHash);
 
             await _unitOfWork.UserRepository.CreateAsync(user);
@@ -73,6 +81,12 @@ namespace Application.Services
             return _mapper.Map<UserResponseDTO>(user);
         }
 
+        /// <summary>
+        /// Generates an OTP and sends it to the user's email for password recovery.
+        /// </summary>
+        /// <param name="email">The email address of the user requesting the OTP.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <exception cref="Exception">Thrown if the user is not found.</exception>
         public async Task SendOtpAsync(string email)
         {
             var user = await _unitOfWork.UserRepository.GetUserByEmail(email);
@@ -80,11 +94,28 @@ namespace Application.Services
 
             string otp = new Random().Next(100000, 999999).ToString();
 
+            // Save OTP to Redis with a 5-minute expiration
             await _redisService.SetAsync($"OTP_{email}", otp, TimeSpan.FromMinutes(5));
 
-            Console.WriteLine($"[MOCK EMAIL] OTP for {email} is: {otp}");
+            string subject = "ChemXLab - Mã xác thực đặt lại mật khẩu";
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                    <h2 style='color: #2c3e50;'>Yêu cầu đặt lại mật khẩu</h2>
+                    <p>Xin chào <b>{user.FullName}</b>,</p>
+                    <p>Mã xác thực (OTP) của bạn là:</p>
+                    <h1 style='color: #e74c3c; letter-spacing: 5px;'>{otp}</h1>
+                    <p>Mã này sẽ hết hạn sau <b>5 phút</b>.</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(email, subject, body);
         }
 
+        /// <summary>
+        /// Verifies if the provided OTP matches the one stored in the system.
+        /// </summary>
+        /// <param name="email">The email address associated with the OTP.</param>
+        /// <param name="otp">The OTP code to verify.</param>
+        /// <returns>True if the OTP is valid; otherwise, false.</returns>
         public async Task<bool> VerifyOtpAsync(string email, string otp)
         {
             var storedOtp = await _redisService.GetAsync<string>($"OTP_{email}");
@@ -93,6 +124,12 @@ namespace Application.Services
             return true;
         }
 
+        /// <summary>
+        /// Resets the user's password after successful OTP verification.
+        /// </summary>
+        /// <param name="request">The object containing the email, OTP code, and the new password.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <exception cref="Exception">Thrown if the OTP is invalid/expired or the user is not found.</exception>
         public async Task ResetPasswordAsync(ResetPasswordDTO request)
         {
             var isValid = await VerifyOtpAsync(request.Email, request.OtpCode);
@@ -100,10 +137,13 @@ namespace Application.Services
 
             var user = await _unitOfWork.UserRepository.GetUserByEmail(request.Email);
             if (user == null) throw new Exception("User not found");
+
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
             _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
+
+            // Invalidate the OTP after use
             await _redisService.RemoveAsync($"OTP_{request.Email}");
         }
     }
