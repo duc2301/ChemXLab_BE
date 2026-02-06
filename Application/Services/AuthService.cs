@@ -104,7 +104,7 @@ namespace Application.Services
 
             _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<UserResponseDTO>(newUser);
+            await _redisService.RemoveAsync($"OTP_{request.Email}");
         }
     }
 }
