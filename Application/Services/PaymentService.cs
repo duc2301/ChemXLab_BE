@@ -19,15 +19,14 @@ namespace Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ISubscriptionService _subscriptionService;
         private readonly SePaySettings _sePaySettings;
 
-        public PaymentService(
-            IUnitOfWork unitOfWork,
-            IMapper mapper,
-            IOptions<SePaySettings> sePayOptions)
+        public PaymentService(IUnitOfWork unitOfWork, IMapper mapper, ISubscriptionService subscriptionService, IOptions<SePaySettings> sePayOptions)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _subscriptionService = subscriptionService;
             _sePaySettings = sePayOptions.Value;
         }
 
@@ -127,7 +126,7 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Kích hoạt dịch vụ
-            await ActivateSubscription(matchedPayment);
+            await _subscriptionService.ActiveSubscription(matchedPayment.UserId, matchedPayment.PackageId);
 
             return true;
         }
@@ -158,29 +157,6 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             return true;
-        }
-
-        /// <summary>
-        /// Activates the user's subscription upon successful payment.
-        /// </summary>
-        private async Task ActivateSubscription(PaymentTransaction payment)
-        {
-            // Logic to activate subscription (currently commented out)
-            //var package = await _unitOfWork.PackageRepository
-            //    .GetByIdAsync(payment.PackageId);
-
-            //var subscription = new Subscription
-            //{
-            //    Id = Guid.NewGuid(),
-            //    UserId = payment.UserId,
-            //    PackageId = payment.PackageId,
-            //    StartDate = DateTime.Now,
-            //    EndDate = DateTime.Now.AddDays(package.DurationDays),
-            //    IsActive = true
-            //};
-
-            //await _unitOfWork.SubscriptionRepository.CreateAsync(subscription);
-            //await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<PaymentResponseDTO>> GetMyTransaction(Guid userId)

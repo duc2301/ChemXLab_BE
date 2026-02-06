@@ -3,6 +3,7 @@ using Application.DTOs.RequestDTOs.Package;
 using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.ResponseDTOs.Package;
 using Application.DTOs.ResponseDTOs.Payment;
+using Application.DTOs.ResponseDTOs.Subscriptions;
 using Application.DTOs.ResponseDTOs.User;
 using AutoMapper;
 using Domain.Entities;
@@ -37,6 +38,8 @@ namespace Application.Mapping
             CreateMap<Package, PackageResponseDTO>()
                 .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
                     DeserializeFeaturesSafe(src.Features)));
+
+            CreateMap<Subscription, SubscriptionResponseDTO>().ReverseMap();
         }
 
         private List<string> DeserializeFeaturesSafe(string? json)

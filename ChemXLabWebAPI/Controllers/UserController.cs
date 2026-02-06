@@ -30,8 +30,8 @@ namespace ChemXLabWebAPI.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var user = await _userService.GetUserByIdAsync(userId);
+                var userId = User.FindFirst("UserId")?.Value;
+                var user = await _userService.GetUserByIdAsync(Guid.Parse(userId));
                 return Ok(ApiResponse.Success("Get profile success", user));
             }
             catch (Exception ex)
@@ -49,8 +49,8 @@ namespace ChemXLabWebAPI.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var updatedUser = await _userService.UpdateUserAsync(userId, request);
+                var userId = User.FindFirst("UserId")?.Value;
+                var updatedUser = await _userService.UpdateUserAsync(Guid.Parse(userId), request);
                 return Ok(ApiResponse.Success("Profile updated successfully", updatedUser));
             }
             catch (Exception ex)
@@ -70,8 +70,8 @@ namespace ChemXLabWebAPI.Controllers
 
             try
             {
-                var userId = GetCurrentUserId();
-                await _userService.ChangePasswordAsync(userId, request);
+                var userId = User.FindFirst("UserId")?.Value;
+                await _userService.ChangePasswordAsync(Guid.Parse(userId), request);
                 return Ok(ApiResponse.Success("Password changed successfully", null));
             }
             catch (Exception ex)
@@ -150,23 +150,6 @@ namespace ChemXLabWebAPI.Controllers
                 return BadRequest(ApiResponse.Fail(ex.Message));
             }
         }
-
         
-        private Guid GetCurrentUserId()
-        {
-            var idClaim = User.FindFirst("Id")?.Value;
-
-            if (string.IsNullOrEmpty(idClaim))
-            {
-                idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            }
-
-            if (Guid.TryParse(idClaim, out Guid userId))
-            {
-                return userId;
-            }
-
-            throw new UnauthorizedAccessException("User ID not found in token or invalid.");
-        }
     }
 }

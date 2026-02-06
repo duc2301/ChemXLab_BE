@@ -49,6 +49,9 @@ namespace Infrastructure.UnitOfWorks
         /// </summary>
         public IPackageRepository PackageRepository => _packageRepository ??= new PackageRepository(_context);
 
+        private ISubscriptionRepository _subscriptionRepository;
+        public ISubscriptionRepository SubscriptionRepository => _subscriptionRepository ??= new SubscriptionRepository(_context);
+
         /// <summary>
         /// Persists all changes made in the current context to the database.
         /// </summary>

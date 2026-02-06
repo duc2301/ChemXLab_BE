@@ -1,13 +1,8 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.DTOs.RequestDTOs.Payment;
-using Application.DTOs.RequestDTOs.Sepay;
 using Application.Interfaces.IServices;
-using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace ChemXLabWebAPI.Controllers
 {
@@ -19,11 +14,14 @@ namespace ChemXLabWebAPI.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly IConfiguration _configuration;
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService, IConfiguration configuration)
         {
             _paymentService = paymentService;
+            _configuration = configuration;
         }
+
 
         /// <summary>
         /// Initiates a new payment transaction.
@@ -79,10 +77,26 @@ namespace ChemXLabWebAPI.Controllers
         /// Handles Webhook notifications from the SePay gateway.
         /// </summary>
         /// <returns>Standard acknowledgement response.</returns>
-        /// <response code="200">Webhook processed successfully.</response>
+        /// <response code="200">Webhook processed successfully.</response>        
         [HttpPost("sepay/webhook")]
         public async Task<IActionResult> SePayWebhook([FromBody] SePayWebhookDTO dto)
         {
+            string authHeader = Request.Headers["Authorization"].ToString();
+
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Apikey "))
+            {
+                return Unauthorized(ApiResponse.Fail("Authorization header is missing or invalid format"));
+            }
+
+            var receivedKey = authHeader.Substring(7).Trim();
+
+            var mySecretKey = _configuration["SePay:ApiKey"];
+
+            if (!string.Equals(receivedKey, mySecretKey, StringComparison.Ordinal))
+            {
+                return Unauthorized(ApiResponse.Fail("Apikey is invalid"));
+            }
+
             var success = await _paymentService.ConfirmPaymentAsync(dto);
 
             if (!success)

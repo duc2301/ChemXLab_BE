@@ -34,13 +34,13 @@ namespace Application.Services
         public string GenerateToken(User user)
         {
             if (user == null) return null;
-            string userRole = !string.IsNullOrEmpty(user.Role) ? user.Role : "Student";
+            if (string.IsNullOrEmpty(user.Role)) user.Role = null;
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim("UserId", user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("AvatarUrl", user.AvatarUrl ?? string.Empty),
-                new Claim(ClaimTypes.Role, userRole),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
@@ -54,6 +54,27 @@ namespace Application.Services
                 signingCredentials: credentials
                 );
 
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<string> GenerateSepayKeyAccess()
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Role, "Sepay"),
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                _issuer,
+                _audience,
+                claims,
+                expires: DateTime.UtcNow.AddYears(1),
+                signingCredentials: credentials
+                );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

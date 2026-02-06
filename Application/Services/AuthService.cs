@@ -5,6 +5,7 @@ using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
 using Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -103,8 +104,7 @@ namespace Application.Services
 
             _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
-
-            await _redisService.RemoveAsync($"OTP_{request.Email}");
+            return _mapper.Map<UserResponseDTO>(newUser);
         }
     }
 }

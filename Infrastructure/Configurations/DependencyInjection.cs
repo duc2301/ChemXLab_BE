@@ -62,6 +62,9 @@ namespace Infrastructure.Configurations
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPackageRepository, PackageRepository>(); // Đừng quên cái này nếu có dùng
 
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionService, SubsctiptionService>();
+
             return services;
         }
     }
