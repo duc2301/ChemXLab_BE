@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.IServices;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 namespace Application.Services
 {
     /// <summary>
-    /// Gọi Gemini API với retry logic để xử lý rate limit
+    /// Gọi Gemini API với retry logic + caching để tránh rate limit
     /// </summary>
     public class GeminiLLMService : ILLMService
     {
@@ -19,18 +20,22 @@ namespace Application.Services
         private readonly string _apiKey;
         private readonly string _model;
         private readonly ILogger<GeminiLLMService> _logger;
+        private readonly IMemoryCache _cache;
         
         // Retry configuration
         private const int MaxRetries = 3;
         private const int InitialDelayMs = 1000;
+        private const int CacheDurationMinutes = 30; // Cache 30 phút
 
         public GeminiLLMService(
             HttpClient httpClient, 
             IConfiguration configuration,
-            ILogger<GeminiLLMService> logger)
+            ILogger<GeminiLLMService> logger,
+            IMemoryCache cache)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _cache = cache;
             _apiKey = configuration["AiSettings:GeminiApiKey"] 
                 ?? throw new Exception("❌ Gemini API Key không tìm thấy trong appsettings.json!");
             _model = configuration["AiSettings:GeminiModel"] ?? "gemini-2.5-flash";
@@ -39,11 +44,27 @@ namespace Application.Services
         }
 
         /// <summary>
-        /// Gọi Gemini để lấy phản hồi (với retry logic)
+        /// Gọi Gemini để lấy phản hồi (với cache + retry logic)
         /// </summary>
         public async Task<string> GetCompletionAsync(string prompt)
         {
-            return await RetryAsync(() => GetCompletionInternalAsync(prompt), MaxRetries);
+            // Kiểm tra cache trước
+            var cacheKey = $"gemini_response_{prompt.GetHashCode()}";
+            
+            if (_cache.TryGetValue(cacheKey, out string cachedResponse))
+            {
+                _logger.LogInformation($"📦 Lấy từ cache");
+                return cachedResponse;
+            }
+
+            // Nếu không có cache, gọi API
+            var result = await RetryAsync(() => GetCompletionInternalAsync(prompt), MaxRetries);
+            
+            // Lưu vào cache
+            _cache.Set(cacheKey, result, TimeSpan.FromMinutes(CacheDurationMinutes));
+            _logger.LogInformation($"💾 Lưu vào cache ({CacheDurationMinutes} phút)");
+            
+            return result;
         }
 
         /// <summary>
@@ -157,7 +178,7 @@ namespace Application.Services
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw; // Re-throw để retry handler xử lý
+                throw;
             }
             catch (Exception ex)
             {

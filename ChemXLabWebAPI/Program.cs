@@ -45,6 +45,7 @@ builder.Services.Configure<SePaySettings>(
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 
+builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<ILLMService, GeminiLLMService>();
 
 builder.Services.AddSingleton<IConversationMemoryService, ConversationMemoryService>();
