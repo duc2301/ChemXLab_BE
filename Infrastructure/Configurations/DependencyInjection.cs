@@ -61,7 +61,9 @@ namespace Infrastructure.Configurations
 
             // 6. Đăng ký Repositories cụ thể
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPackageRepository, PackageRepository>(); // Đừng quên cái này nếu có dùng
+
+            services.AddScoped<IPackageRepository, PackageRepository>();
+            services.AddScoped<IPackageService, PackageService>();
 
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionService, SubsctiptionService>();

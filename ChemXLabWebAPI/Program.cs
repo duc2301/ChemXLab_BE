@@ -1,11 +1,10 @@
 using Application.DTOs.RequestDTOs.Sepay;
 using Application.Interfaces.IServices;
-using Application.Interfaces.IUnitOfWork;
 using Application.Services;
 using ChemXLabWebAPI.DataHandler.Exceptions;
 using ChemXLabWebAPI.Extensions;
+using ChemXLabWebAPI.Hubs;
 using Infrastructure.Configurations;
-using Infrastructure.UnitOfWorks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +31,8 @@ builder.Services.AddControllers(options =>
 });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddEndpointsApiExplorer();;
+builder.Services.AddSignalR();
+builder.Services.AddEndpointsApiExplorer(); ;
 
 builder.Services.AddInfrastructureService(builder.Configuration);
 builder.Services.AddGlobalValidation(builder.Configuration);
@@ -42,8 +42,6 @@ builder.Services.SwaggerServices(builder);
 builder.Services.Configure<SePaySettings>(
     builder.Configuration.GetSection("SePay"));
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IPackageService, PackageService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<ILLMService, GeminiLLMService>();
@@ -53,6 +51,7 @@ builder.Services.AddSingleton<IConversationMemoryService, ConversationMemoryServ
 builder.Services.AddScoped<IChemistryToolkit, ChemistryToolkit>();
 
 builder.Services.AddScoped<IAIChemistryAgent, AIChemistryAgent>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -75,6 +74,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<PaymentHub>("/PaymentHub");
 
 app.MapControllers();
 

@@ -1,8 +1,10 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.DTOs.RequestDTOs.Payment;
 using Application.Interfaces.IServices;
+using ChemXLabWebAPI.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChemXLabWebAPI.Controllers
 {
@@ -15,12 +17,15 @@ namespace ChemXLabWebAPI.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly IConfiguration _configuration;
+        private readonly IHubContext<PaymentHub> _hubContext;        
 
-        public PaymentController(IPaymentService paymentService, IConfiguration configuration)
+        public PaymentController(IPaymentService paymentService, IConfiguration configuration, IHubContext<PaymentHub> hubContext)
         {
             _paymentService = paymentService;
             _configuration = configuration;
+            _hubContext = hubContext;
         }
+
 
 
         /// <summary>
@@ -97,10 +102,12 @@ namespace ChemXLabWebAPI.Controllers
                 return Unauthorized(ApiResponse.Fail("Apikey is invalid"));
             }
 
-            var success = await _paymentService.ConfirmPaymentAsync(dto);
+            Guid? userId = await _paymentService.ConfirmPaymentAsync(dto);
 
-            if (!success)
+            if (userId.ToString() == null)
                 return BadRequest(ApiResponse.Fail("Paid fail"));
+
+            await _hubContext.Clients.User(userId.ToString()).SendAsync("PaymentSuccess", true);
 
             return Ok(ApiResponse.Success("Paid successful"));
         }

@@ -18,7 +18,7 @@ namespace Application.Interfaces.IServices
         /// Processes a payment confirmation webhook from the payment gateway (SePay).
         /// </summary>
         /// <returns>True if the payment was successfully confirmed.</returns>
-        Task<bool> ConfirmPaymentAsync(SePayWebhookDTO dto);
+        Task<Guid?> ConfirmPaymentAsync(SePayWebhookDTO dto);
 
         /// <summary>
         /// Retrieves a history of all payment transactions.
