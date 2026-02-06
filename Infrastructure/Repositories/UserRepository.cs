@@ -29,15 +29,6 @@ namespace Infrastructure.Repositories
         }
 
         /// <summary>
-        /// Retrieves a user matching the provided email and password.
-        /// </summary>
-        /// <returns>The user entity if credentials match, otherwise null.</returns>
-        public async Task<User?> Login(LoginDTO request)
-        {
-            return await _context.Users.Where(u => u.Email == request.Email && u.PasswordHash == request.Password).FirstOrDefaultAsync();
-        }
-
-        /// <summary>
         /// Retrieves a user entity based on their email address.
         /// </summary>
         /// <returns>The user entity if found, otherwise null.</returns>
