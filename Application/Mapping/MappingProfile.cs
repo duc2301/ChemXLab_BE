@@ -7,6 +7,7 @@ using Application.DTOs.ResponseDTOs.Payment;
 using Application.DTOs.ResponseDTOs.Subscriptions;
 using Application.DTOs.ResponseDTOs.User;
 using Application.Interfaces.IServices;
+using Application.DTOs.RequestDTOs.User;
 using AutoMapper;
 using Domain.Entities;
 using System.Text.Json;
@@ -21,6 +22,9 @@ namespace Application.Mapping
             CreateMap<User, UserResponseDTO>().ReverseMap();
             CreateMap<RegisterDTO, User>().ReverseMap();
             CreateMap<LoginDTO, User>().ReverseMap();
+            CreateMap<CreateUserDTO, User>();
+            CreateMap<UpdateUserDTO, User>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // --- Payment Mappings ---
             CreateMap<PaymentTransaction, PaymentResponseDTO>().ReverseMap();
