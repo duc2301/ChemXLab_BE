@@ -88,7 +88,7 @@ namespace Application.Services
         /// </summary>
         /// <param name="dto">The webhook data payload.</param>
         /// <returns>True if the payment is successfully confirmed, otherwise False.</returns>
-        public async Task<bool> ConfirmPaymentAsync(SePayWebhookDTO dto)
+        public async Task<Guid?> ConfirmPaymentAsync(SePayWebhookDTO dto)
         {
             PaymentTransaction? matchedPayment = null;
             var match = Regex.Match(dto.Content, @"ChemXLab_?([a-zA-Z0-9-]+)", RegexOptions.IgnoreCase);            
@@ -114,10 +114,10 @@ namespace Application.Services
 
             if (matchedPayment == null)
             {
-                return false;
+                return null;
             }
 
-            if (matchedPayment.Status == "PAID") return true;
+            if (matchedPayment.Status == "PAID") return matchedPayment.UserId.Value;
 
             matchedPayment.Status = "PAID";
             matchedPayment.PaidAt = dto.TransactionDate; 
@@ -128,7 +128,7 @@ namespace Application.Services
             // Kích hoạt dịch vụ
             await _subscriptionService.ActiveSubscription(matchedPayment.UserId, matchedPayment.PackageId);
 
-            return true;
+            return matchedPayment.UserId.Value;
         }
 
         /// <summary>

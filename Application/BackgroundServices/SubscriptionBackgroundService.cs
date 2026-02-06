@@ -11,7 +11,7 @@ namespace Application.BackgroundServices
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public SubscriptionBackgroundService(IServiceScopeFactory scopeFactory, ISubscriptionService subscriptionService)
+        public SubscriptionBackgroundService(IServiceScopeFactory scopeFactory)
         {
             _scopeFactory = scopeFactory;
         }
@@ -31,7 +31,7 @@ namespace Application.BackgroundServices
                 {
                     throw new Exception("Error in SubscriptionBackgroundService: " + ex.Message);
                 }
-                Task.Delay(TimeSpan.FromHours(30), stoppingToken).Wait();
+                await Task.Delay(TimeSpan.FromHours(12), stoppingToken);
             }
         }
 
