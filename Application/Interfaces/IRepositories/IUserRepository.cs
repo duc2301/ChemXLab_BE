@@ -14,11 +14,6 @@ namespace Application.Interfaces.IRepositories
         /// <returns>True if the email exists, otherwise False.</returns>
         Task<bool> CheckEmailExist(string email);
 
-        /// <summary>
-        /// Validates user credentials for login.
-        /// </summary>
-        /// <returns>The user entity if credentials are valid, otherwise null.</returns>
-        Task<User?> Login(LoginDTO request);
 
         /// <summary>
         /// Retrieves a user entity by their email address.

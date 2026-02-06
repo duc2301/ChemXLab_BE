@@ -25,6 +25,8 @@ namespace Application.Interfaces.IUnitOfWork
         /// </summary>
         IPackageRepository PackageRepository { get; }
 
+        ISubscriptionRepository SubscriptionRepository { get; }
+
         /// <summary>
         /// Saves all changes made in this context to the database asynchronously.
         /// </summary>

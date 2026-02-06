@@ -4,6 +4,7 @@ using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.ResponseDTOs.Chatbot;
 using Application.DTOs.ResponseDTOs.Package;
 using Application.DTOs.ResponseDTOs.Payment;
+using Application.DTOs.ResponseDTOs.Subscriptions;
 using Application.DTOs.ResponseDTOs.User;
 using Application.Interfaces.IServices;
 using AutoMapper;
@@ -41,6 +42,8 @@ namespace Application.Mapping
                     DeserializeFeaturesSafe(src.Features)));
 
             CreateMap<ChemistryAgentResponse, ChatResponseDTO>();
+
+            CreateMap<Subscription, SubscriptionResponseDTO>().ReverseMap();
         }
 
         private List<string> DeserializeFeaturesSafe(string? json)

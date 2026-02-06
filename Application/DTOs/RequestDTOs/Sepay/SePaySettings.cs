@@ -38,5 +38,7 @@ namespace Application.DTOs.RequestDTOs.Sepay
         /// The base URL used to generate QR codes.
         /// </summary>
         public string QrBaseUrl { get; set; }
+
+        public string ApiKey { get; set; }
     }
 }
