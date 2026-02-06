@@ -11,5 +11,7 @@ namespace Application.Interfaces.IServices
         Task<bool> ActiveSubscription(Guid? userId, int? packageId);
 
         Task<IEnumerable<SubscriptionResponseDTO>> MySubscription(Guid? userId);
+
+        Task ExspireSubscription();
     }
 }

@@ -32,5 +32,7 @@ namespace Application.Interfaces.IServices
         /// <returns>True if the cancellation was successful.</returns>
         Task<bool> CancelPaymentAsync(Guid id);
         Task<IEnumerable<PaymentResponseDTO>> GetMyTransaction(Guid userId);
+
+        Task ExspirePaymentAsync();
     }
 }

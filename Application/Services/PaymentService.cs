@@ -168,5 +168,11 @@ namespace Application.Services
             var payment = await _unitOfWork.PaymentRepository.GetByUserId(userId);
             return _mapper.Map<IEnumerable<PaymentResponseDTO>>(payment);
         }
+
+        public async Task ExspirePaymentAsync()
+        {
+            await _unitOfWork.PaymentRepository.ExpirePendingPaymentsAsync();
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 }

@@ -16,11 +16,23 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task ExspireSubscription()
+        {
+            var listExspireSubscription = await _context.Subscriptions
+                .Where(s => s.IsActive == true && s.EndDate <= DateTime.Now)
+                .ToListAsync();
+            
+            foreach (var subscription in listExspireSubscription)
+            {
+                subscription.IsActive = false;
+            }
+        }
+
         public async Task<IEnumerable<Subscription>> getMySubscription(Guid value)
         {
             return await _context.Subscriptions
                 .Include(s => s.Package)
-                .Where(s => s.UserId == value && s.IsActive == true).ToListAsync() ;
+                .Where(s => s.UserId == value && s.IsActive == true).ToListAsync();
         }
 
     }
