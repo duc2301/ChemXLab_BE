@@ -17,7 +17,8 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "http://localhost:5174"
             )
             .AllowAnyHeader()
             .AllowCredentials()
@@ -43,6 +44,14 @@ builder.Services.Configure<SePaySettings>(
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPackageService, PackageService>();
+
+builder.Services.AddHttpClient<ILLMService, GeminiLLMService>();
+
+builder.Services.AddSingleton<IConversationMemoryService, ConversationMemoryService>();
+
+builder.Services.AddScoped<IChemistryToolkit, ChemistryToolkit>();
+
+builder.Services.AddScoped<IAIChemistryAgent, AIChemistryAgent>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

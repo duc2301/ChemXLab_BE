@@ -1,10 +1,12 @@
 ﻿using Application.DTOs.RequestDTOs.Auth;
 using Application.DTOs.RequestDTOs.Package;
 using Application.DTOs.RequestDTOs.Payment;
+using Application.DTOs.ResponseDTOs.Chatbot;
 using Application.DTOs.ResponseDTOs.Package;
 using Application.DTOs.ResponseDTOs.Payment;
 using Application.DTOs.ResponseDTOs.Subscriptions;
 using Application.DTOs.ResponseDTOs.User;
+using Application.Interfaces.IServices;
 using AutoMapper;
 using Domain.Entities;
 using System.Text.Json;
@@ -38,6 +40,8 @@ namespace Application.Mapping
             CreateMap<Package, PackageResponseDTO>()
                 .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
                     DeserializeFeaturesSafe(src.Features)));
+
+            CreateMap<ChemistryAgentResponse, ChatResponseDTO>();
 
             CreateMap<Subscription, SubscriptionResponseDTO>().ReverseMap();
         }
