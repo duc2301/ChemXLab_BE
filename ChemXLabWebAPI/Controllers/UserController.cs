@@ -30,8 +30,8 @@ namespace ChemXLabWebAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst("UserId")?.Value;
-                var user = await _userService.GetUserByIdAsync(Guid.Parse(userId));
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+                var user = await _userService.GetUserByIdAsync(Guid.Parse(userId.Value));
                 return Ok(ApiResponse.Success("Get profile success", user));
             }
             catch (Exception ex)
@@ -49,8 +49,8 @@ namespace ChemXLabWebAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst("UserId")?.Value;
-                var updatedUser = await _userService.UpdateUserAsync(Guid.Parse(userId), request);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+                var updatedUser = await _userService.UpdateUserAsync(Guid.Parse(userId.Value), request);
                 return Ok(ApiResponse.Success("Profile updated successfully", updatedUser));
             }
             catch (Exception ex)
@@ -70,8 +70,8 @@ namespace ChemXLabWebAPI.Controllers
 
             try
             {
-                var userId = User.FindFirst("UserId")?.Value;
-                await _userService.ChangePasswordAsync(Guid.Parse(userId), request);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+                await _userService.ChangePasswordAsync(Guid.Parse(userId.Value), request);
                 return Ok(ApiResponse.Success("Password changed successfully", null));
             }
             catch (Exception ex)

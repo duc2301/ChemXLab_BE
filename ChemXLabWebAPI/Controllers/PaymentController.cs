@@ -5,6 +5,7 @@ using ChemXLabWebAPI.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace ChemXLabWebAPI.Controllers
 {
@@ -37,8 +38,8 @@ namespace ChemXLabWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePayment([FromQuery] int packageId)
         {
-            var userId = User.FindFirst("UserId")?.Value;
-            var result = await _paymentService.CreatePaymentAsync(Guid.Parse(userId), packageId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            var result = await _paymentService.CreatePaymentAsync(Guid.Parse(userId.Value), packageId);
             return Ok(ApiResponse.Success("Payment created successfully", result));
         }
 
@@ -46,8 +47,8 @@ namespace ChemXLabWebAPI.Controllers
         [HttpGet("My-Transaction")]
         public async Task<IActionResult> GetMyTransactions()
         {
-            var userId = User.FindFirst("UserId")?.Value;
-            var result = await _paymentService.GetMyTransaction(Guid.Parse(userId));
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            var result = await _paymentService.GetMyTransaction(Guid.Parse(userId.Value));
             return Ok(ApiResponse.Success("Get my transactions successfully", result));
         }
 
