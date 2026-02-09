@@ -3,6 +3,7 @@ using Application.Interfaces.IServices;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ChemXLabWebAPI.Controllers
 {
@@ -21,8 +22,8 @@ namespace ChemXLabWebAPI.Controllers
         [HttpGet("my-subscription")]
         public async Task<IActionResult> MySubcription()
         {
-            var userId = User.FindFirst("UserId")?.Value;
-            var subscriptions = await _service.MySubscription(Guid.Parse(userId));
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            var subscriptions = await _service.MySubscription(Guid.Parse(userId.Value));
             return Ok(ApiResponse.Success("get subscription successful", subscriptions));
         }
     }
