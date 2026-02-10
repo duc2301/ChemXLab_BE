@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.IServices;
+﻿using Application.ExceptionMidleware;
+using Application.Interfaces.IServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -28,7 +29,7 @@ namespace Application.BackgroundServices
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Error in PaymentBackgroundService: " + ex.Message);
+                    throw new ApiExceptionResponse("Error in PaymentBackgroundService: " + ex.Message);
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken);

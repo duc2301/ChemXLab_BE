@@ -12,7 +12,7 @@ namespace Application.DTOs.ResponseDTOs.Package
         /// <summary>
         /// The unique identifier of the package.
         /// </summary>
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// The display name of the package.

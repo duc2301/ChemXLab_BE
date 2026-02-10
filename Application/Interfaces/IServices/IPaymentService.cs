@@ -12,7 +12,7 @@ namespace Application.Interfaces.IServices
         /// Initiates a new payment transaction.
         /// </summary>
         /// <returns>The payment transaction details, including QR code or payment link.</returns>
-        Task<PaymentResponseDTO> CreatePaymentAsync(Guid userId, int packageId);
+        Task<PaymentResponseDTO> CreatePaymentAsync(Guid userId, Guid packageId);
 
         /// <summary>
         /// Processes a payment confirmation webhook from the payment gateway (SePay).

@@ -67,7 +67,7 @@ namespace Application.Services
         /// <param name="id">The ID of the package to update.</param>
         /// <param name="updatePackageDTO">The updated package data.</param>
         /// <returns>The updated package details, or null if the package does not exist.</returns>
-        public async Task<PackageResponseDTO> UpdatePackageAsync(int id, UpdatePackageDTO updatePackageDTO)
+        public async Task<PackageResponseDTO?> UpdatePackageAsync(int id, UpdatePackageDTO updatePackageDTO)
         {
             var existingPackage = await _unitOfWork.PackageRepository.GetByIdAsync(id);
             if (existingPackage == null) return null;

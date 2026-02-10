@@ -23,7 +23,7 @@ namespace Application.DTOs.ResponseDTOs.Payment
         /// <summary>
         /// The identifier of the purchased package.
         /// </summary>
-        public int? PackageId { get; set; }
+        public Guid? PackageId { get; set; }
 
         /// <summary>
         /// The amount paid.
