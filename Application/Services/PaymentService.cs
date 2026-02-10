@@ -35,7 +35,7 @@ namespace Application.Services
         /// </summary>
         /// <param name="request">The payment creation details.</param>
         /// <returns>The created payment transaction details including the QR URL.</returns>
-        public async Task<PaymentResponseDTO> CreatePaymentAsync(Guid userId, int packageId)
+        public async Task<PaymentResponseDTO> CreatePaymentAsync(Guid userId, Guid packageId)
         {
             var paymentId = Guid.NewGuid();
             var transactionCode = $"ChemXLab_{paymentId}";
@@ -60,7 +60,7 @@ namespace Application.Services
                 CreatedAt = DateTime.Now,
             };
 
-            payment.Qrurl = GenerateSePayQr(payment);
+            payment.QrUrl = GenerateSePayQr(payment);
 
             await _unitOfWork.PaymentRepository.CreateAsync(payment);
             await _unitOfWork.SaveChangesAsync();
@@ -91,7 +91,7 @@ namespace Application.Services
         public async Task<Guid?> ConfirmPaymentAsync(SePayWebhookDTO dto)
         {
             PaymentTransaction? matchedPayment = null;
-            var match = Regex.Match(dto.Content, @"ChemXLab_?([a-zA-Z0-9-]+)", RegexOptions.IgnoreCase);            
+            var match = Regex.Match(dto.Content, @"ChemXLab_?([a-zA-Z0-9-]+)", RegexOptions.IgnoreCase);
 
             if (match.Success)
             {

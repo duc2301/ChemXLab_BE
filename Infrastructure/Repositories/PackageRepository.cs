@@ -24,7 +24,7 @@ namespace Infrastructure.Repositories
         /// Checks if a package with the specified ID exists in the database.
         /// </summary>
         /// <returns>True if the package exists, otherwise False.</returns>
-        public async Task<bool> ExistsAsync(int id)
+        public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Packages.AnyAsync(p => p.Id == id);
         }

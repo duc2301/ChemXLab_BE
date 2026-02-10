@@ -42,15 +42,15 @@ namespace Application.Services
         /// </summary>
         /// <param name="loginDTO">The login credentials (email and password).</param>
         /// <returns>A JWT string if authentication is successful.</returns>
-        /// <exception cref="Exception">Thrown when the email or password is incorrect.</exception>
+        /// <exception cref="ApiExceptionResponse">Thrown when the email or password is incorrect.</exception>
         public async Task<string> Login(LoginDTO loginDTO)
         {
             var user = await _unitOfWork.UserRepository.GetUserByEmail(loginDTO.Email);
-            if (user == null) throw new Exception("Invalid email or password");
+            if (user == null) throw new ApiExceptionResponse("Invalid email or password", 401);
 
             // CHECK HASH
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.PasswordHash);
-            if (!isPasswordValid) throw new Exception("Invalid email or password");
+            if (!isPasswordValid) throw new ApiExceptionResponse("Invalid email or password", 401);
 
             return _jwtService.GenerateToken(user);
         }
@@ -60,11 +60,11 @@ namespace Application.Services
         /// </summary>
         /// <param name="registerDTO">The user registration details.</param>
         /// <returns>The profile information of the newly created user.</returns>
-        /// <exception cref="Exception">Thrown when the provided email address is already in use.</exception>
+        /// <exception cref="ApiExceptionResponse">Thrown when the provided email address is already in use.</exception>
         public async Task<UserResponseDTO> Register(RegisterDTO registerDTO)
         {
             if (await _unitOfWork.UserRepository.CheckEmailExist(registerDTO.Email))
-                throw new Exception("Email already exists");
+                throw new ApiExceptionResponse("Email already exists");
 
             var user = _mapper.Map<User>(registerDTO);
             user.Id = Guid.NewGuid();
@@ -86,11 +86,11 @@ namespace Application.Services
         /// </summary>
         /// <param name="email">The email address of the user requesting the OTP.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        /// <exception cref="Exception">Thrown if the user is not found.</exception>
+        /// <exception cref="ApiExceptionResponse">Thrown if the user is not found.</exception>
         public async Task SendOtpAsync(string email)
         {
             var user = await _unitOfWork.UserRepository.GetUserByEmail(email);
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new ApiExceptionResponse("User not found");
 
             string otp = new Random().Next(100000, 999999).ToString();
 
@@ -129,14 +129,14 @@ namespace Application.Services
         /// </summary>
         /// <param name="request">The object containing the email, OTP code, and the new password.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        /// <exception cref="Exception">Thrown if the OTP is invalid/expired or the user is not found.</exception>
+        /// <exception cref="ApiExceptionResponse">Thrown if the OTP is invalid/expired or the user is not found.</exception>
         public async Task ResetPasswordAsync(ResetPasswordDTO request)
         {
             var isValid = await VerifyOtpAsync(request.Email, request.OtpCode);
-            if (!isValid) throw new Exception("Invalid or expired OTP");
+            if (!isValid) throw new ApiExceptionResponse("Invalid or expired OTP");
 
             var user = await _unitOfWork.UserRepository.GetUserByEmail(request.Email);
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new ApiExceptionResponse("User not found");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 

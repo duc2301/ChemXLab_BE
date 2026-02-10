@@ -36,7 +36,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <response code="200">Payment initiated successfully.</response>
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromQuery] int packageId)
+        public async Task<IActionResult> CreatePayment([FromQuery] Guid packageId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier);
             var result = await _paymentService.CreatePaymentAsync(Guid.Parse(userId.Value), packageId);

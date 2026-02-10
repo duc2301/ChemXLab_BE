@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace Domain.Entities;
 
-/// <summary>
-/// Represents a registered user in the ChemXLab system.
-/// </summary>
 public partial class User
 {
     public Guid Id { get; set; }
@@ -16,12 +13,11 @@ public partial class User
 
     public string? FullName { get; set; }
 
-    /// <summary>
-    /// The role of the user (e.g., Student, Teacher, Admin).
-    /// </summary>
     public string? Role { get; set; }
 
     public string? AvatarUrl { get; set; }
+
+    public string? Status { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 

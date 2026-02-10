@@ -20,7 +20,7 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<bool> ActiveSubscription(Guid? userId, int? packageId)
+        public async Task<bool> ActiveSubscription(Guid? userId, Guid? packageId)
         {
             Package? package = await _unitOfWork.PackageRepository.GetByIdAsync(packageId.Value);
 
