@@ -8,7 +8,7 @@ namespace Application.Interfaces.IServices
 {
     public interface ISubscriptionService
     {
-        Task<bool> ActiveSubscription(Guid? userId, int? packageId);
+        Task<bool> ActiveSubscription(Guid? userId, Guid? packageId);
 
         Task<IEnumerable<SubscriptionResponseDTO>> MySubscription(Guid? userId);
 

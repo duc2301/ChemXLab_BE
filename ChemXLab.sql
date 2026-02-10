@@ -1,22 +1,18 @@
 --TẠO DATABASE (Chạy riêng dòng này nếu cần, hoặc bỏ qua nếu đã có DB)
 DROP DATABASE IF EXISTS "ChemXLab";
-CREATE DATABASE "ChemXLab";
 
--- ==========================================
---TẠO EXTENSION & BẢNG
--- ==========================================
 -- ==========================================
 -- 1. KHỞI TẠO DATABASE
 -- ==========================================
--- (Bỏ comment dòng dưới nếu chưa tạo DB)
--- DROP DATABASE IF EXISTS "ChemXLab";
--- CREATE DATABASE "ChemXLab";
+
+CREATE DATABASE "ChemXLab";
+
 
 -- ==========================================
 -- 2. TẠO EXTENSION & DỌN DẸP
 -- ==========================================
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+--CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+--CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Xóa bảng cũ để làm sạch (theo thứ tự khóa ngoại)
 DROP TABLE IF EXISTS submissions, assignments, class_members, classes, reaction_components, reactions, chemicals, elements, subscriptions, packages, users CASCADE;
@@ -30,18 +26,51 @@ DROP TYPE IF EXISTS user_role, component_role CASCADE;
 
 -- MODULE 1: AUTH & USERS
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100),
-    -- [UPDATED] Dùng VARCHAR thay vì ENUM để dễ Scaffold
-    -- Các giá trị gợi ý: 'ADMIN', 'TEACHER', 'STUDENT', 'ORG_MANAGER'
-    role VARCHAR(50) DEFAULT 'STUDENT', 
+    role VARCHAR(50) DEFAULT 'STUDENT', -- 'ADMIN', 'TEACHER', 'STUDENT'
     avatar_url TEXT,
+    status VARCHAR(50) DEFAULT 'Active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- MODULE 2: CHEMISTRY CORE
+-- 1.2 PACKAGES & PAYMENT (Đưa lên trước để Subscriptions tham chiếu)
+CREATE TABLE packages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(50) NOT NULL,
+    price DECIMAL(12, 2) DEFAULT 0,
+    duration_days INT DEFAULT 30,
+    status VARCHAR(20) DEFAULT 'ACTIVE', -- Đã thêm cột này để fix lỗi
+    features JSONB
+);
+
+CREATE TABLE subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
+    package_id UUID REFERENCES packages(id), -- Sửa INT thành UUID cho khớp
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE payment_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
+    package_id UUID REFERENCES packages(id), -- Sửa INT thành UUID
+    amount DECIMAL(12, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'VND',
+    payment_method VARCHAR(50),
+    qr_url TEXT,
+    description TEXT,
+    paid_at TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'PENDING',
+    transaction_code VARCHAR(100) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1.3 CHEMISTRY CORE
 CREATE TABLE elements (
     id SERIAL PRIMARY KEY,
     symbol VARCHAR(3) UNIQUE NOT NULL,
@@ -51,7 +80,7 @@ CREATE TABLE elements (
 );
 
 CREATE TABLE chemicals (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     formula VARCHAR(50) NOT NULL,
     common_name VARCHAR(255),
     iupac_name VARCHAR(255),
@@ -63,7 +92,7 @@ CREATE TABLE chemicals (
 );
 
 CREATE TABLE reactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     description TEXT,
     conditions TEXT,
     is_reversible BOOLEAN DEFAULT FALSE,
@@ -72,23 +101,22 @@ CREATE TABLE reactions (
 );
 
 CREATE TABLE reaction_components (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     reaction_id UUID REFERENCES reactions(id) ON DELETE CASCADE,
     chemical_id UUID REFERENCES chemicals(id),
-    -- Các giá trị gợi ý: 'REACTANT', 'PRODUCT', 'CATALYST'
-    role VARCHAR(20) NOT NULL, 
+    role VARCHAR(20) NOT NULL, -- 'REACTANT', 'PRODUCT', 'CATALYST'
     coefficient INT DEFAULT 1,
     state_in_reaction VARCHAR(20)
 );
-
 CREATE INDEX idx_reaction_chem ON reaction_components(chemical_id, role);
 
--- MODULE 3: LMS
+-- 1.4 LMS (CLASSES)
 CREATE TABLE classes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     teacher_id UUID REFERENCES users(id),
     name VARCHAR(100) NOT NULL,
     class_code VARCHAR(20) UNIQUE,
+    status VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -96,117 +124,107 @@ CREATE TABLE class_members (
     class_id UUID REFERENCES classes(id),
     student_id UUID REFERENCES users(id),
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50),
     PRIMARY KEY (class_id, student_id)
 );
 
 CREATE TABLE assignments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     class_id UUID REFERENCES classes(id),
     title VARCHAR(255) NOT NULL,
     description TEXT,
     deadline TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50),
     lab_config JSONB 
 );
 
 CREATE TABLE submissions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     assignment_id UUID REFERENCES assignments(id),
     student_id UUID REFERENCES users(id),
     score DECIMAL(5, 2),
     teacher_feedback TEXT,
     result_snapshot JSONB, 
+    status VARCHAR(50),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- MODULE 4: PAYMENT
-CREATE TABLE packages (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50),
-    price DECIMAL(12, 2),
-    duration_days INT,
-    features JSONB
-);
-
-CREATE TABLE subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
-    package_id INT REFERENCES packages(id),
-    start_date TIMESTAMP,
-    end_date TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE
-);
-
--- ==========================================
--- E. PAYMENT MODULE EXPANSION (BỔ SUNG)
--- ==========================================
-
--- 1. TẠO BẢNG LỊCH SỬ GIAO DỊCH (Transaction History)
--- Bảng này giúp lưu lại log khi user thanh toán qua cổng (VNPAY, MoMo, PayPal)
-CREATE TABLE IF NOT EXISTS payment_transactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
-    package_id INT REFERENCES packages(id),
-    amount DECIMAL(12, 2) NOT NULL,
-    currency VARCHAR(3) DEFAULT 'VND',
-    payment_method VARCHAR(50), -- Ví dụ: 'VNPAY', 'MOMO', 'CREDIT_CARD'
-	QrUrl VARCHAR,
-	Description VARCHAR,
-	Paid_at TIMESTAMP,
-    status VARCHAR(20) DEFAULT 'PENDING', -- 'SUCCESS', 'FAILED', 'PENDING'
-    transaction_code VARCHAR(100) UNIQUE, -- Mã giao dịch từ cổng thanh toán trả về
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 2. INSERT DỮ LIỆU GÓI DỊCH VỤ (PACKAGES)
--- Xóa dữ liệu cũ để tránh trùng lặp khi chạy lại script
-TRUNCATE TABLE packages CASCADE;
-
-INSERT INTO packages (id, name, price, duration_days, features) VALUES
-(1, 'Free Starter', 0, 3650, '{"lab_access": "basic", "max_projects": 3, "support": "community"}'),
-(2, 'Student Pro', 50000, 30, '{"lab_access": "full", "max_projects": 50, "support": "email", "advanced_chemicals": true}'),
-(3, 'Teacher Premium', 450000, 365, '{"lab_access": "unlimited", "max_classes": 10, "analytics": true, "export_reports": true}');
-
--- 3. INSERT DỮ LIỆU ĐĂNG KÝ (SUBSCRIPTIONS)
--- Giả lập: Admin dùng gói Teacher, Student dùng gói Student Pro
-
-INSERT INTO subscriptions (user_id, package_id, start_date, end_date, is_active)
-SELECT 
-    id as user_id,
-    3 as package_id, -- Admin dùng gói Teacher
-    CURRENT_TIMESTAMP as start_date,
-    CURRENT_TIMESTAMP + INTERVAL '1 year' as end_date,
-    TRUE
-FROM users WHERE email = 'admin@chemxlab.com';
-
-INSERT INTO subscriptions (user_id, package_id, start_date, end_date, is_active)
-SELECT 
-    id as user_id,
-    2 as package_id, -- Student dùng gói Student Pro
-    CURRENT_TIMESTAMP as start_date,
-    CURRENT_TIMESTAMP + INTERVAL '30 days' as end_date,
-    TRUE
-FROM users WHERE email = 'student@chemxlab.com';
-
--- 4. INSERT DỮ LIỆU LỊCH SỬ GIAO DỊCH (TRANSACTIONS)
--- Giả lập lịch sử thanh toán thành công
-INSERT INTO payment_transactions (user_id, package_id, amount, payment_method, status, transaction_code)
-SELECT 
-    id, 
-    2, -- Gói Student
-    50000, 
-    'MOMO', 
-    'SUCCESS', 
-    'MOMO123456789' 
-FROM users WHERE email = 'student@chemxlab.com';
 
 -- ==========================================
 -- 4. INSERT DATA (MẪU)
 -- ==========================================
 
+--INSERT DỮ LIỆU GÓI DỊCH VỤ (PACKAGES)
+-- Xóa dữ liệu cũ để tránh trùng lặp khi chạy lại script
+TRUNCATE TABLE packages CASCADE;
+
+INSERT INTO packages (id, name, price, duration_days, status, features) VALUES
+(
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', -- ID cố định cho gói FREE
+    'FREE', 
+    0, 
+    180, 
+    'ACTIVE',
+    '[
+        "Trải nghiệm 3 thí nghiệm hóa học có sẵn",
+        "Tạo thí nghiệm mới (1 lượt/ngày)",
+        "Sử dụng thiết bị và chất hóa học cơ bản (1 lượt/ngày)",
+        "AI Chatbox cơ bản (10 lượt/ngày)"
+    ]'::jsonb
+),
+(
+    'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', -- ID cố định cho gói SMART LAB
+    'SMART LAB', 
+    299000, 
+    180, 
+    'ACTIVE',
+    '[
+        "Trải nghiệm các thí nghiệm hóa học có sẵn từ chương trình trung học cơ sở",
+        "Tạo thí nghiệm mới",
+        "Sử dụng thiết bị và chất hóa học cơ bản",
+        "AI Chatbox cơ bản"
+    ]'::jsonb
+),
+(
+    'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', -- ID cố định cho gói GENIUS LAB
+    'GENIUS LAB', 
+    599000, 
+    180, 
+    'ACTIVE',
+    '[
+        "Trải nghiệm các thí nghiệm hóa học có sẵn từ chương trình trung học phổ thông",
+        "Tạo thí nghiệm mới",
+        "Sử dụng thiết bị và chất hóa học nâng cao",
+        "AI Chatbox toàn diện"
+    ]'::jsonb
+),
+(
+    'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', -- ID cố định cho gói DIAMOND
+    'DIAMOND', 
+    0, 
+    365, 
+    'ACTIVE',
+    '[
+        "Ưu đãi theo số lượng người dùng",
+        "Quản lý tài khoản nhóm, phân quyền",
+        "Bao gồm tất cả tính năng của gói Genius Lab",
+        "Cập nhật & bảo trì định kỳ miễn phí trong thời hạn hợp đồng"
+    ]'::jsonb
+)
+ON CONFLICT (id) 
+DO UPDATE SET 
+    name = EXCLUDED.name,
+    price = EXCLUDED.price,
+    duration_days = EXCLUDED.duration_days,
+    status = EXCLUDED.status,
+    features = EXCLUDED.features; 
+
+
+
 -- A. USERS
-INSERT INTO users (email, password_hash, full_name, role) VALUES 
-('admin@chemxlab.com', 'hashed_pass_1', 'System Admin', 'ADMIN'),
-('student@chemxlab.com', 'hashed_pass_2', 'Nguyen Van A', 'STUDENT');
+INSERT INTO users (email, password_hash, full_name, status, role) VALUES 
+('admin@chemxlab.com', '$2a$11$sGxA4dKQU3znv6lzug3SbO1MOjqezUkGzqxPuJxvLkcW40Er5teza', 'System Admin', 'Active', 'ADMIN'),
+('student@chemxlab.com', '$2a$11$sGxA4dKQU3znv6lzug3SbO1MOjqezUkGzqxPuJxvLkcW40Er5teza', 'Nguyen Van A', 'Active', 'STUDENT');
 
 -- B. ELEMENTS (Bảng tuần hoàn 118 nguyên tố)
 INSERT INTO elements (id, symbol, name, atomic_mass, properties) VALUES

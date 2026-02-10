@@ -13,6 +13,6 @@ namespace Application.DTOs.RequestDTOs.Payment
         /// <summary>
         /// The identifier of the subscription package being purchased.
         /// </summary>
-        public int? PackageId { get; set; }
+        public Guid? PackageId { get; set; }
     }
 }

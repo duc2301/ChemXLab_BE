@@ -14,6 +14,6 @@ namespace Application.Interfaces.IRepositories
         /// Checks if a package exists by its ID.
         /// </summary>
         /// <returns>True if the package exists, otherwise False.</returns>
-        Task<bool> ExistsAsync(int id);
+        Task<bool> ExistsAsync(Guid id);
     }
 }

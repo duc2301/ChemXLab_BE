@@ -40,9 +40,6 @@ public partial class ChemXlabContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseNpgsql("Host=localhost; Port=5432; Database=ChemXLab; Username=postgres; Password=12345; TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -65,6 +62,9 @@ public partial class ChemXlabContext : DbContext
             entity.Property(e => e.LabConfig)
                 .HasColumnType("jsonb")
                 .HasColumnName("lab_config");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
             entity.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");
@@ -130,6 +130,9 @@ public partial class ChemXlabContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
             entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Classes)
@@ -149,6 +152,9 @@ public partial class ChemXlabContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("joined_at");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
 
             entity.HasOne(d => d.Class).WithMany(p => p.ClassMembers)
                 .HasForeignKey(d => d.ClassId)
@@ -191,8 +197,12 @@ public partial class ChemXlabContext : DbContext
 
             entity.ToTable("packages");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.DurationDays).HasColumnName("duration_days");
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("uuid_generate_v4()")
+                .HasColumnName("id");
+            entity.Property(e => e.DurationDays)
+                .HasDefaultValue(30)
+                .HasColumnName("duration_days");
             entity.Property(e => e.Features)
                 .HasColumnType("jsonb")
                 .HasColumnName("features");
@@ -201,7 +211,12 @@ public partial class ChemXlabContext : DbContext
                 .HasColumnName("name");
             entity.Property(e => e.Price)
                 .HasPrecision(12, 2)
+                .HasDefaultValue(0m)
                 .HasColumnName("price");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValueSql("'ACTIVE'::character varying")
+                .HasColumnName("status");
         });
 
         modelBuilder.Entity<PaymentTransaction>(entity =>
@@ -226,9 +241,7 @@ public partial class ChemXlabContext : DbContext
                 .HasMaxLength(3)
                 .HasDefaultValueSql("'VND'::character varying")
                 .HasColumnName("currency");
-            entity.Property(e => e.Description)
-                .HasColumnType("character varying")
-                .HasColumnName("description");
+            entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.PackageId).HasColumnName("package_id");
             entity.Property(e => e.PaidAt)
                 .HasColumnType("timestamp without time zone")
@@ -236,11 +249,9 @@ public partial class ChemXlabContext : DbContext
             entity.Property(e => e.PaymentMethod)
                 .HasMaxLength(50)
                 .HasColumnName("payment_method");
-            entity.Property(e => e.Qrurl)
-                .HasColumnType("character varying")
-                .HasColumnName("qrurl");
+            entity.Property(e => e.QrUrl).HasColumnName("qr_url");
             entity.Property(e => e.Status)
-                .HasMaxLength(20)
+                .HasMaxLength(50)
                 .HasDefaultValueSql("'PENDING'::character varying")
                 .HasColumnName("status");
             entity.Property(e => e.TransactionCode)
@@ -326,6 +337,9 @@ public partial class ChemXlabContext : DbContext
             entity.Property(e => e.Score)
                 .HasPrecision(5, 2)
                 .HasColumnName("score");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.SubmittedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -400,6 +414,10 @@ public partial class ChemXlabContext : DbContext
                 .HasMaxLength(50)
                 .HasDefaultValueSql("'STUDENT'::character varying")
                 .HasColumnName("role");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("'Active'::character varying")
+                .HasColumnName("status");
         });
 
         OnModelCreatingPartial(modelBuilder);

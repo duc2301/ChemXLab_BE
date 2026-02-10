@@ -10,7 +10,7 @@ namespace Application.DTOs.ResponseDTOs.Subscriptions
 
         public Guid? UserId { get; set; }
 
-        public int? PackageId { get; set; }
+        public Guid? PackageId { get; set; }
 
         public DateTime? StartDate { get; set; }
 
