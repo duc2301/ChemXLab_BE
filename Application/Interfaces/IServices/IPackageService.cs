@@ -21,7 +21,7 @@ namespace Application.Interfaces.IServices
         /// Retrieves detailed information about a specific package.
         /// </summary>
         /// <returns>The package details if found, otherwise null.</returns>
-        Task<PackageResponseDTO?> GetPackageByIdAsync(int id);
+        Task<PackageResponseDTO?> GetPackageByIdAsync(Guid id);
 
         /// <summary>
         /// Creates a new subscription package.
@@ -33,12 +33,12 @@ namespace Application.Interfaces.IServices
         /// Updates an existing subscription package.
         /// </summary>
         /// <returns>The updated package details.</returns>
-        Task<PackageResponseDTO?> UpdatePackageAsync(int id, UpdatePackageDTO updatePackageDTO);
+        Task<PackageResponseDTO?> UpdatePackageAsync(Guid id, UpdatePackageDTO updatePackageDTO);
 
         /// <summary>
         /// Deletes a subscription package from the system.
         /// </summary>
         /// <returns>True if deletion was successful, otherwise False.</returns>
-        Task<bool> DeletePackageAsync(int id);
+        Task<bool> DeletePackageAsync(Guid id);
     }
 }
