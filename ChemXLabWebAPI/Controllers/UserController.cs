@@ -112,7 +112,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Creates a new user manually. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO request)
         {
@@ -132,7 +132,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Deletes a user permanently. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
