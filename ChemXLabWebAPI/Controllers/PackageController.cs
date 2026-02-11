@@ -37,7 +37,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>The detailed information of the requested package.</returns>
         /// <response code="200">Request successful, returns the package details.</response>
         [HttpGet("{id}", Name = "GetPackageById")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var package = await _packageService.GetPackageByIdAsync(id);
             if (package == null)
@@ -70,7 +70,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>The updated package details.</returns>
         /// <response code="200">Package updated successfully.</response>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdatePackageDTO dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePackageDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse.Fail("Invalid input data", ModelState));
@@ -89,7 +89,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>A success message indicating deletion.</returns>
         /// <response code="200">Package deleted successfully.</response>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             var success = await _packageService.DeletePackageAsync(id);
             if (!success)

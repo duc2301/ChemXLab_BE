@@ -34,13 +34,18 @@ namespace Infrastructure.Configurations
                 options.UseNpgsql(connectionString)
             );
 
-            // 2. Cấu hình Redis Cache (QUAN TRỌNG CHO OTP & CACHING)
+            // 2. Cấu hình Cache: CHUYỂN TỪ REDIS SANG IN-MEMORY (RAM)
+            // Dùng RAM của server để chạy cache.
+            // Lưu ýyyy: Dữ liệu cache (OTP, v.v.) sẽ mất khi restart server.
+            services.AddDistributedMemoryCache();
+
+            /* ĐOẠN CODE CŨ DÙNG REDIS (comment lại để dành sau này cần thì mở ra)
             services.AddStackExchangeRedisCache(options =>
             {
-                // Lấy chuỗi kết nối từ appsettings.json, mặc định là localhost:6379 nếu không tìm thấy
                 options.Configuration = configuration.GetConnectionString("RedisConnection") ?? "localhost:6379";
                 options.InstanceName = "ChemXLab_"; // Prefix để tránh trùng key với app khác trên cùng Redis server
             });
+            */
 
             // 3. Cấu hình AutoMapper & Generic Repository
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
@@ -55,7 +60,9 @@ namespace Infrastructure.Configurations
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailService, EmailService>();
 
-            // Đăng ký RedisService (Wrapper cho IDistributedCache)
+            // Đăng ký RedisService 
+            // Vẫn giữ nguyên tên class này vì nó implement IRedisService và dùng IDistributedCache.
+            // IDistributedCache bây giờ sẽ trỏ vào Memory thay vì Redis thật.
             services.AddScoped<IRedisService, RedisService>();
 
             services.AddScoped<IPaymentRepository, PaymentRepository>();
