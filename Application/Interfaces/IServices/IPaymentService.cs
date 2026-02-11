@@ -34,5 +34,6 @@ namespace Application.Interfaces.IServices
         Task<IEnumerable<PaymentResponseDTO>> GetMyTransaction(Guid userId);
 
         Task ExspirePaymentAsync();
+        Task<PaymentResponseDTO> GetPaymentByIdAsync(Guid id);
     }
 }
