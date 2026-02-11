@@ -58,10 +58,21 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>A list of all payments.</returns>
         /// <response code="200">Request successful, returns payment history.</response>
         [HttpGet]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllPayments()
         {
             var result = await _paymentService.GetAllPaymentsAsync();
             return Ok(ApiResponse.Success("Get all payments successfully", result));
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetPaymentById(Guid id)
+        {
+            var result = await _paymentService.GetPaymentByIdAsync(id);
+            if (result == null)
+                return NotFound(ApiResponse.Fail("Payment not found"));
+            return Ok(ApiResponse.Success("Get payment successfully", result));
         }
 
         /// <summary>
@@ -69,8 +80,9 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>Confirmation message of cancellation.</returns>
         /// <response code="200">Payment cancelled successfully.</response>
+        
         [HttpPut("{id}/cancel")]
-        public async Task<IActionResult> CancelPayment(Guid id)
+        private async Task<IActionResult> CancelPayment(Guid id)
         {
             var success = await _paymentService.CancelPaymentAsync(id);
             if (!success)

@@ -174,5 +174,11 @@ namespace Application.Services
             await _unitOfWork.PaymentRepository.ExpirePendingPaymentsAsync();
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task<PaymentResponseDTO> GetPaymentByIdAsync(Guid id)
+        {
+            var payment =  await _unitOfWork.PaymentRepository.GetByIdAsync(id);
+            return  _mapper.Map<PaymentResponseDTO>(payment);
+        }
     }
 }
