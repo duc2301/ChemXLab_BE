@@ -78,6 +78,9 @@ namespace Infrastructure.Configurations
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionService, SubsctiptionService>();
             services.AddScoped<IChemicalRepository, ChemicalRepository>();
+
+            services.AddScoped<IElementRepository, ElementRepository>();
+            services.AddScoped<IElementService, ElementService>();
             services.AddHostedService<PaymentBackrgroundService>();
             services.AddHostedService<SubscriptionBackgroundService>();
 

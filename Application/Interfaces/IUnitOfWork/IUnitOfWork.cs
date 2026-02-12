@@ -33,6 +33,11 @@ namespace Application.Interfaces.IUnitOfWork
         ISubscriptionRepository SubscriptionRepository { get; }
 
         /// <summary>
+        /// Gets the repository for managing chemical elements.
+        /// </summary>
+        IElementRepository ElementRepository { get; }
+
+        /// <summary>
         /// Saves all changes made in this context to the database asynchronously.
         /// </summary>
         /// <returns>The number of state entries written to the database.</returns>
