@@ -1,13 +1,15 @@
 ﻿using Application.DTOs.RequestDTOs.Auth;
+using Application.DTOs.RequestDTOs.Chemical;
 using Application.DTOs.RequestDTOs.Package;
 using Application.DTOs.RequestDTOs.Payment;
+using Application.DTOs.RequestDTOs.User;
 using Application.DTOs.ResponseDTOs.Chatbot;
+using Application.DTOs.ResponseDTOs.Chemical;
 using Application.DTOs.ResponseDTOs.Package;
 using Application.DTOs.ResponseDTOs.Payment;
 using Application.DTOs.ResponseDTOs.Subscriptions;
 using Application.DTOs.ResponseDTOs.User;
 using Application.Interfaces.IServices;
-using Application.DTOs.RequestDTOs.User;
 using AutoMapper;
 using Domain.Entities;
 using System.Text.Json;
@@ -44,6 +46,18 @@ namespace Application.Mapping
             CreateMap<Package, PackageResponseDTO>()
                 .ForMember(dest => dest.Features, opt => opt.MapFrom(src =>
                     DeserializeFeaturesSafe(src.Features)));
+
+            // --- Chemical Mappings ---
+            CreateMap<Chemical, ChemicalResponseDTO>()
+                .ForMember(dest => dest.MolecularData, opt => opt.MapFrom(src =>
+                    DeserializeFeaturesSafe(src.MolecularData)));
+            CreateMap<CreateChemicalDTO, Chemical>()
+                .ForMember(dest => dest.MolecularData, opt => opt.MapFrom(src =>
+                    src.MolecularData != null? JsonSerializer.Serialize(src.MolecularData, (JsonSerializerOptions?)null): null));
+            CreateMap<UpdateChemicalDTO, Chemical>()
+                 .ForMember(dest => dest.MolecularData, opt => opt.MapFrom(src =>
+                    src.MolecularData != null? JsonSerializer.Serialize(src.MolecularData, (JsonSerializerOptions?)null): null))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<ChemistryAgentResponse, ChatResponseDTO>();
 
