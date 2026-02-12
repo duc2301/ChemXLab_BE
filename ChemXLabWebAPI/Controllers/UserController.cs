@@ -83,7 +83,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Retrieves a list of all users. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -94,7 +94,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Retrieves a specific user by ID. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(Guid id)
         {

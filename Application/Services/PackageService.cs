@@ -42,7 +42,10 @@ namespace Application.Services
         public async Task<PackageResponseDTO?> GetPackageByIdAsync(Guid id) 
         {
             var package = await _unitOfWork.PackageRepository.GetByIdAsync(id);
-            if (package == null) return null;
+            if (package == null || package.Status == "Inactive")
+            {
+                return null;
+            }
             return _mapper.Map<PackageResponseDTO>(package);
         }
 

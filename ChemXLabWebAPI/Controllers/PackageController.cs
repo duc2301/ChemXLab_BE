@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.DTOs.RequestDTOs.Package;
 using Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
@@ -52,6 +53,7 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>The newly created package object.</returns>
         /// <response code="201">Package created successfully.</response>
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePackageDTO dto)
         {
@@ -69,6 +71,7 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>The updated package details.</returns>
         /// <response code="200">Package updated successfully.</response>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePackageDTO dto)
         {
@@ -88,6 +91,7 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>A success message indicating deletion.</returns>
         /// <response code="200">Package deleted successfully.</response>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
