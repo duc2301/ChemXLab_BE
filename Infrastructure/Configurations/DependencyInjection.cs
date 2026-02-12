@@ -59,6 +59,7 @@ namespace Infrastructure.Configurations
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IChemicalService, ChemicalService>();
 
             // Đăng ký RedisService 
             // Vẫn giữ nguyên tên class này vì nó implement IRedisService và dùng IDistributedCache.
@@ -76,7 +77,7 @@ namespace Infrastructure.Configurations
 
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionService, SubsctiptionService>();
-
+            services.AddScoped<IChemicalRepository, ChemicalRepository>();
             services.AddHostedService<PaymentBackrgroundService>();
             services.AddHostedService<SubscriptionBackgroundService>();
 
