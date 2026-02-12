@@ -52,6 +52,9 @@ namespace Infrastructure.UnitOfWorks
         private ISubscriptionRepository _subscriptionRepository;
         public ISubscriptionRepository SubscriptionRepository => _subscriptionRepository ??= new SubscriptionRepository(_context);
 
+        private IElementRepository? _elementRepository;
+        public IElementRepository ElementRepository => _elementRepository ??= new ElementRepository(_context);
+
         /// <summary>
         /// Persists all changes made in the current context to the database.
         /// </summary>
