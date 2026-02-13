@@ -78,7 +78,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <param name="createDto">The data transfer object containing the information required to create a new chemical. Cannot be null.</param>
         /// <returns>An IActionResult that represents the result of the create operation. Returns a 201 Created response with the
         /// created chemical on success, or a 400 Bad Request response if validation fails or an error occurs.</returns>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateChemicalDTO createDto)
         {
@@ -104,7 +104,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>An <see cref="IActionResult"/> indicating the result of the update operation. Returns 200 (OK) with the
         /// updated chemical on success, 400 (Bad Request) if validation fails or the IDs do not match, or 404 (Not
         /// Found) if the chemical does not exist.</returns>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateChemicalDTO updateDto)
         {
@@ -136,7 +136,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>An <see cref="IActionResult"/> indicating the result of the delete operation. Returns 200 (OK) if the
         /// chemical was deleted successfully, 404 (Not Found) if the chemical does not exist, or 400 (Bad Request) if
         /// an error occurs.</returns>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
