@@ -48,9 +48,20 @@ namespace Infrastructure.UnitOfWorks
         /// Gets the Package Repository instance. Uses lazy initialization.
         /// </summary>
         public IPackageRepository PackageRepository => _packageRepository ??= new PackageRepository(_context);
+            
+        // Chemical Repository
+        private IChemicalRepository _chemicalRepository;
+
+        /// <summary>
+        /// Gets the repository used to access and manage chemical entities in the data store.
+        /// </summary>
+        public IChemicalRepository ChemicalRepository => _chemicalRepository ??= new ChemicalRepository(_context);
 
         private ISubscriptionRepository _subscriptionRepository;
         public ISubscriptionRepository SubscriptionRepository => _subscriptionRepository ??= new SubscriptionRepository(_context);
+
+        private IElementRepository? _elementRepository;
+        public IElementRepository ElementRepository => _elementRepository ??= new ElementRepository(_context);
 
         /// <summary>
         /// Persists all changes made in the current context to the database.

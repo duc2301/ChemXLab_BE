@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.ApiResponseDTO;
 using Application.DTOs.RequestDTOs.Package;
 using Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChemXLabWebAPI.Controllers
@@ -37,7 +38,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <returns>The detailed information of the requested package.</returns>
         /// <response code="200">Request successful, returns the package details.</response>
         [HttpGet("{id}", Name = "GetPackageById")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var package = await _packageService.GetPackageByIdAsync(id);
             if (package == null)
@@ -52,6 +53,7 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>The newly created package object.</returns>
         /// <response code="201">Package created successfully.</response>
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePackageDTO dto)
         {
@@ -69,8 +71,9 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>The updated package details.</returns>
         /// <response code="200">Package updated successfully.</response>
+        [Authorize(Roles = "ADMIN")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdatePackageDTO dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePackageDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse.Fail("Invalid input data", ModelState));
@@ -88,8 +91,9 @@ namespace ChemXLabWebAPI.Controllers
         /// </summary>
         /// <returns>A success message indicating deletion.</returns>
         /// <response code="200">Package deleted successfully.</response>
+        [Authorize(Roles = "ADMIN")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             var success = await _packageService.DeletePackageAsync(id);
             if (!success)

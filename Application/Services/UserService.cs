@@ -47,22 +47,16 @@ namespace Application.Services
         /// </summary>
         public async Task<UserResponseDTO> CreateUserAsync(CreateUserDTO request)
         {
-            // 1. Kiểm tra Email đã tồn tại chưa
             var isExist = await _unitOfWork.UserRepository.CheckEmailExist(request.Email);
             if (isExist) throw new Exception("Email is already registered.");
 
-            // 2. Map dữ liệu từ DTO sang Entity
             var user = _mapper.Map<User>(request);
 
-            // 3. Khởi tạo các giá trị mặc định
             user.Id = Guid.NewGuid();
             user.CreatedAt = DateTime.UtcNow;
 
-            // 4. HASH PASSWORD (Bắt buộc)
-            // Sử dụng BCrypt để mã hóa mật khẩu trước khi lưu
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            // 5. Lưu vào DB
             await _unitOfWork.UserRepository.CreateAsync(user);
             await _unitOfWork.SaveChangesAsync();
 
@@ -77,17 +71,12 @@ namespace Application.Services
             var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
             if (user == null) throw new KeyNotFoundException("User not found");
 
-            // Chỉ cập nhật FullName và AvatarUrl nếu có dữ liệu gửi lên
-            // AutoMapper đã được cấu hình (trong MappingProfile) để bỏ qua null,
-            // hoặc bạn có thể gán thủ công để kiểm soát chặt chẽ hơn:
 
             if (!string.IsNullOrEmpty(request.FullName))
                 user.FullName = request.FullName;
 
             if (!string.IsNullOrEmpty(request.AvatarUrl))
                 user.AvatarUrl = request.AvatarUrl;
-
-            // Lưu ý: Tuyệt đối không update user.Email ở đây theo yêu cầu
 
             _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
@@ -103,14 +92,12 @@ namespace Application.Services
             var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
             if (user == null) throw new KeyNotFoundException("User not found");
 
-            // 1. Kiểm tra mật khẩu cũ (Verify Hash)
             bool isOldPassCorrect = BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash);
             if (!isOldPassCorrect)
             {
                 throw new Exception("Incorrect old password.");
             }
 
-            // 2. Hash mật khẩu mới và cập nhật
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
             _unitOfWork.UserRepository.Update(user);
@@ -126,8 +113,9 @@ namespace Application.Services
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
             if (user == null) throw new KeyNotFoundException("User not found");
+            user.Status = "InActive";
 
-            _unitOfWork.UserRepository.Delete(user);
+            _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

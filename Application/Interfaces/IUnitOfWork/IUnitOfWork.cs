@@ -25,7 +25,17 @@ namespace Application.Interfaces.IUnitOfWork
         /// </summary>
         IPackageRepository PackageRepository { get; }
 
+        /// <summary>
+        /// Gets the repository used to access and manage chemical data.
+        /// </summary>
+        IChemicalRepository ChemicalRepository { get; }
+
         ISubscriptionRepository SubscriptionRepository { get; }
+
+        /// <summary>
+        /// Gets the repository for managing chemical elements.
+        /// </summary>
+        IElementRepository ElementRepository { get; }
 
         /// <summary>
         /// Saves all changes made in this context to the database asynchronously.
@@ -38,5 +48,6 @@ namespace Application.Interfaces.IUnitOfWork
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task CommitAsync();
+
     }
 }

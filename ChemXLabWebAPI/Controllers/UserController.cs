@@ -83,7 +83,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Retrieves a list of all users. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -94,7 +94,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Retrieves a specific user by ID. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(Guid id)
         {
@@ -112,7 +112,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Creates a new user manually. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO request)
         {
@@ -132,7 +132,7 @@ namespace ChemXLabWebAPI.Controllers
         /// <summary>
         /// Deletes a user permanently. (Admin Only)
         /// </summary>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {

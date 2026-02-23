@@ -39,10 +39,13 @@ namespace Application.Services
         /// </summary>
         /// <param name="id">The ID of the package.</param>
         /// <returns>The package details if found, otherwise null.</returns>
-        public async Task<PackageResponseDTO?> GetPackageByIdAsync(int id)
+        public async Task<PackageResponseDTO?> GetPackageByIdAsync(Guid id) 
         {
             var package = await _unitOfWork.PackageRepository.GetByIdAsync(id);
-            if (package == null) return null;
+            if (package == null || package.Status == "Inactive")
+            {
+                return null;
+            }
             return _mapper.Map<PackageResponseDTO>(package);
         }
 
@@ -54,6 +57,9 @@ namespace Application.Services
         public async Task<PackageResponseDTO> CreatePackageAsync(CreatePackageDTO createPackageDTO)
         {
             var package = _mapper.Map<Package>(createPackageDTO);
+
+            package.Id = Guid.NewGuid();
+            package.Status = "Active";
 
             await _unitOfWork.PackageRepository.CreateAsync(package);
             await _unitOfWork.SaveChangesAsync();
@@ -67,7 +73,7 @@ namespace Application.Services
         /// <param name="id">The ID of the package to update.</param>
         /// <param name="updatePackageDTO">The updated package data.</param>
         /// <returns>The updated package details, or null if the package does not exist.</returns>
-        public async Task<PackageResponseDTO?> UpdatePackageAsync(int id, UpdatePackageDTO updatePackageDTO)
+        public async Task<PackageResponseDTO?> UpdatePackageAsync(Guid id, UpdatePackageDTO updatePackageDTO)
         {
             var existingPackage = await _unitOfWork.PackageRepository.GetByIdAsync(id);
             if (existingPackage == null) return null;
@@ -79,17 +85,18 @@ namespace Application.Services
         }
 
         /// <summary>
-        /// Deletes a subscription package from the system.
+        /// Soft Deletes a subscription package (Changes status to InActive).
         /// </summary>
         /// <param name="id">The ID of the package to delete.</param>
         /// <returns>True if the deletion was successful, otherwise False.</returns>
-        public async Task<bool> DeletePackageAsync(int id)
+        public async Task<bool> DeletePackageAsync(Guid id)
         {
-            // Use overload int DeleteById
             var existingPackage = await _unitOfWork.PackageRepository.GetByIdAsync(id);
             if (existingPackage == null) return false;
 
-            _unitOfWork.PackageRepository.Delete(existingPackage);
+            existingPackage.Status = "Inactive";
+
+            _unitOfWork.PackageRepository.Update(existingPackage);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
