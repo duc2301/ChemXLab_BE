@@ -4,10 +4,13 @@ using Application.ExceptionMidleware;
 using Application.Interfaces.IServices;
 using Application.Interfaces.IUnitOfWork;
 using AutoMapper;
+using BCrypt.Net;
 using Domain.Entities;
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
-using BCrypt.Net;
 
 namespace Application.Services
 {
@@ -21,6 +24,8 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly IRedisService _redisService;
         private readonly IEmailService _emailService;
+        private readonly IHttpClientFactory _httpClientFactory;
+
 
         // Inject services into Constructor
         public AuthService(
@@ -28,13 +33,15 @@ namespace Application.Services
             IJwtService jwtService,
             IMapper mapper,
             IRedisService redisService,
-            IEmailService emailService)
+            IEmailService emailService,
+            IHttpClientFactory httpClientFactory)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
             _mapper = mapper;
             _redisService = redisService;
             _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -83,6 +90,7 @@ namespace Application.Services
 
         /// <summary>
         /// Generates an OTP and sends it to the user's email for password recovery.
+        /// Requires an existing user.
         /// </summary>
         /// <param name="email">The email address of the user requesting the OTP.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -102,6 +110,30 @@ namespace Application.Services
                 <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
                     <h2 style='color: #2c3e50;'>Yêu cầu đặt lại mật khẩu</h2>
                     <p>Xin chào <b>{user.FullName}</b>,</p>
+                    <p>Mã xác thực (OTP) của bạn là:</p>
+                    <h1 style='color: #e74c3c; letter-spacing: 5px;'>{otp}</h1>
+                    <p>Mã này sẽ hết hạn sau <b>5 phút</b>.</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(email, subject, body);
+        }
+
+        /// <summary>
+        /// Generates an OTP and sends it to any provided email address (does NOT require an existing user).
+        /// </summary>
+        /// <param name="email">The email address to send the OTP to.</param>
+        public async Task SendOtpToAnyEmailAsync(string email)
+        {
+            string otp = new Random().Next(100000, 999999).ToString();
+
+            // Save OTP to Redis with a 5-minute expiration
+            await _redisService.SetAsync($"OTP_{email}", otp, TimeSpan.FromMinutes(5));
+
+            string subject = "ChemXLab - Mã xác thực";
+            string body = $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                    <h2 style='color: #2c3e50;'>Yêu cầu mã xác thực</h2>
+                    <p>Xin chào,</p>
                     <p>Mã xác thực (OTP) của bạn là:</p>
                     <h1 style='color: #e74c3c; letter-spacing: 5px;'>{otp}</h1>
                     <p>Mã này sẽ hết hạn sau <b>5 phút</b>.</p>
@@ -145,6 +177,65 @@ namespace Application.Services
 
             // Invalidate the OTP after use
             await _redisService.RemoveAsync($"OTP_{request.Email}");
+        }
+
+        /// </summary>
+        /// <param name="accessToken">Google access token (sent from FE as idToken)</param>
+        /// <returns>JWT token string</returns>
+        public async Task<string> GoogleLoginAsync(string accessToken)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+                throw new ApiExceptionResponse("Invalid Google token");
+
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await client.GetAsync("https://www.googleapis.com/oauth2/v3/userinfo");
+            }
+            catch (Exception ex)
+            {
+                throw new ApiExceptionResponse("Failed to contact Google API: " + ex.Message);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApiExceptionResponse("Invalid Google token or failed to retrieve user info");
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(content);
+            var root = doc.RootElement;
+
+            string email = root.GetProperty("email").GetString() ?? throw new ApiExceptionResponse("Google response missing email");
+            string name = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() ?? null : null;
+            string picture = root.TryGetProperty("picture", out var picEl) ? picEl.GetString() ?? null : null;
+
+            // Find user by email
+            var user = await _unitOfWork.UserRepository.GetUserByEmail(email);
+            if (user == null)
+            {
+                // Create new user with values from Google
+                user = new User
+                {
+                    Id = Guid.NewGuid(),
+                    Email = email,
+                    FullName = name,
+                    AvatarUrl = picture,
+                    CreatedAt = DateTime.UtcNow,
+                    Role = "STUDENT",
+                    // Set a random hashed password so column isn't null and user cannot sign in by password
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString())
+                };
+
+                await _unitOfWork.UserRepository.CreateAsync(user);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            // Generate JWT token for the user
+            return _jwtService.GenerateToken(user);
         }
     }
 }

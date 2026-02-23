@@ -22,9 +22,14 @@ namespace Application.Interfaces.IServices
         Task<UserResponseDTO> Register(RegisterDTO request);
 
         /// <summary>
-        /// Sends an OTP to the user's email for password recovery.
+        /// Sends an OTP to the user's email for password recovery (requires existing user).
         /// </summary>
         Task SendOtpAsync(string email);
+
+        /// <summary>
+        /// Sends an OTP to any provided email address (does NOT require an existing user).
+        /// </summary>
+        Task SendOtpToAnyEmailAsync(string email);
 
         /// <summary>
         /// Verifies if the provided OTP is valid for the given email.
@@ -35,5 +40,10 @@ namespace Application.Interfaces.IServices
         /// Resets the user's password using a valid OTP.
         /// </summary>
         Task ResetPasswordAsync(ResetPasswordDTO request);
+
+        /// <summary>
+        /// Performs login or automatic registration using Google access token and returns a JWT token.
+        /// </summary>
+        Task<string> GoogleLoginAsync(string accessToken);
     }
 }
