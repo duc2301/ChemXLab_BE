@@ -60,6 +60,18 @@ namespace ChemXLabWebAPI.Controllers
             catch (Exception ex) { return BadRequest(ApiResponse.Fail(ex.Message)); }
         }
 
+        // POST: api/Auth/send-otp (Sends OTP even if user does not exist)
+        [HttpPost("send-otp")]
+        public async Task<IActionResult> SendOtpToAnyEmail([FromBody] ForgotPasswordRequestDTO request)
+        {
+            try
+            {
+                await _authService.SendOtpToAnyEmailAsync(request.Email);
+                return Ok(ApiResponse.Success("OTP sent to email", null));
+            }
+            catch (Exception ex) { return BadRequest(ApiResponse.Fail(ex.Message)); }
+        }
+
         // POST: api/Auth/verify-otp (Dùng để check trước khi hiện form đổi pass)
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDTO request)
@@ -77,6 +89,18 @@ namespace ChemXLabWebAPI.Controllers
             {
                 await _authService.ResetPasswordAsync(request);
                 return Ok(ApiResponse.Success("Password reset successfully. Please login.", null));
+            }
+            catch (Exception ex) { return BadRequest(ApiResponse.Fail(ex.Message)); }
+        }
+
+        // POST: api/Auth/GoogleLogin
+        [HttpPost("GoogleLogin")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO request)
+        {
+            try
+            {
+                var token = await _authService.GoogleLoginAsync(request.IdToken);
+                return Ok(ApiResponse.Success("Login successful", token));
             }
             catch (Exception ex) { return BadRequest(ApiResponse.Fail(ex.Message)); }
         }
