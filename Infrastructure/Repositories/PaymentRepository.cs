@@ -54,7 +54,7 @@ namespace Infrastructure.Repositories
             }
             if (dateRequestDTOs.ToDate.HasValue)
             {
-                query = query.Where(p => p.PaidAt <= dateRequestDTOs.ToDate.Value && p.PaidAt != null && p.Status == "PAID");
+                query = query.Where(p => p.PaidAt <= dateRequestDTOs.ToDate.Value.AddDays(1) && p.PaidAt != null && p.Status == "PAID");
             }
             if (!dateRequestDTOs.FromDate.HasValue && !dateRequestDTOs.ToDate.HasValue)
             {
