@@ -50,12 +50,15 @@ namespace Infrastructure.Repositories
 
             if (dateRequestDTOs.FromDate.HasValue)
             {
-                query = query.Where(p => p.PaidAt >= dateRequestDTOs.FromDate.Value);
+                query = query.Where(p => p.PaidAt >= dateRequestDTOs.FromDate.Value && p.PaidAt != null && p.Status == "PAID");
             }
-
             if (dateRequestDTOs.ToDate.HasValue)
             {
-                query = query.Where(p => p.PaidAt <= dateRequestDTOs.ToDate.Value);
+                query = query.Where(p => p.PaidAt <= dateRequestDTOs.ToDate.Value && p.PaidAt != null && p.Status == "PAID");
+            }
+            if (!dateRequestDTOs.FromDate.HasValue && !dateRequestDTOs.ToDate.HasValue)
+            {
+                query = query.Where(p => p.PaidAt != null && p.Status == "PAID");
             }
 
             return await query.ToListAsync();
