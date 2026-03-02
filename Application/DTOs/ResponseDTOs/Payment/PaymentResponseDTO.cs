@@ -45,6 +45,8 @@ namespace Application.DTOs.ResponseDTOs.Payment
         /// </summary>
         public string? Status { get; set; }
 
+        public DateTime? PaidAt { get; set; }
+
         /// <summary>
         /// The URL to the QR code for payment (if applicable).
         /// </summary>

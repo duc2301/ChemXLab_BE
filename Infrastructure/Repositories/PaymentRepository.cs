@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.IRepositories;
+﻿using Application.DTOs.RequestDTOs.DateTimeRequestDTOs;
+using Application.Interfaces.IRepositories;
 using Domain.Entities;
 using Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,23 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<PaymentTransaction>> GetPendingPaymentsByAmountAsync(decimal amount)
         {
             return await _context.PaymentTransactions.Where(p => p.Status == "PENDING" && p.Amount == amount).ToListAsync();
+        }
+
+        public async Task<IEnumerable<PaymentTransaction>> GetTransactionsByDateRangeAsync(FromToDateRequestDTOs dateRequestDTOs)
+        {
+            var query = _context.PaymentTransactions.AsQueryable();
+
+            if (dateRequestDTOs.FromDate.HasValue)
+            {
+                query = query.Where(p => p.PaidAt >= dateRequestDTOs.FromDate.Value);
+            }
+
+            if (dateRequestDTOs.ToDate.HasValue)
+            {
+                query = query.Where(p => p.PaidAt <= dateRequestDTOs.ToDate.Value);
+            }
+
+            return await query.ToListAsync();
         }
     }
 }
