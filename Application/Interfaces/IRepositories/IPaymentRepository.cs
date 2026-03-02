@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs.RequestDTOs.DateTimeRequestDTOs;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,5 +15,6 @@ namespace Application.Interfaces.IRepositories
         Task<PaymentTransaction?> GetByTransactionCodeAsync(string code);
         Task<IEnumerable<PaymentTransaction>> GetByUserId(Guid userId);
         Task<IEnumerable<PaymentTransaction>> GetPendingPaymentsByAmountAsync(decimal amount);
+        Task<IEnumerable<PaymentTransaction>> GetTransactionsByDateRangeAsync(FromToDateRequestDTOs dateRequestDTOs);
     }
 }
