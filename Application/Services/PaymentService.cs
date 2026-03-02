@@ -1,4 +1,5 @@
-﻿using Application.DTOs.RequestDTOs.Payment;
+﻿using Application.DTOs.RequestDTOs.DateTimeRequestDTOs;
+using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.RequestDTOs.Sepay;
 using Application.DTOs.ResponseDTOs.Payment;
 using Application.ExceptionMidleware;
@@ -179,6 +180,12 @@ namespace Application.Services
         {
             var payment =  await _unitOfWork.PaymentRepository.GetByIdAsync(id);
             return  _mapper.Map<PaymentResponseDTO>(payment);
+        }
+
+        public async Task<IEnumerable<PaymentResponseDTO>> GetTransactionsByDateRangeAsync(FromToDateRequestDTOs dateRequestDTOs)
+        {
+            var payments = await _unitOfWork.PaymentRepository.GetTransactionsByDateRangeAsync(dateRequestDTOs);
+            return _mapper.Map<IEnumerable<PaymentResponseDTO>>(payments);
         }
     }
 }

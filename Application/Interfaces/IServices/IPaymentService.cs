@@ -1,4 +1,5 @@
-﻿using Application.DTOs.RequestDTOs.Payment;
+﻿using Application.DTOs.RequestDTOs.DateTimeRequestDTOs;
+using Application.DTOs.RequestDTOs.Payment;
 using Application.DTOs.ResponseDTOs.Payment;
 
 namespace Application.Interfaces.IServices
@@ -34,6 +35,9 @@ namespace Application.Interfaces.IServices
         Task<IEnumerable<PaymentResponseDTO>> GetMyTransaction(Guid userId);
 
         Task ExspirePaymentAsync();
+
         Task<PaymentResponseDTO> GetPaymentByIdAsync(Guid id);
+
+        Task<IEnumerable<PaymentResponseDTO>> GetTransactionsByDateRangeAsync(FromToDateRequestDTOs dateRequestDTOs);
     }
 }

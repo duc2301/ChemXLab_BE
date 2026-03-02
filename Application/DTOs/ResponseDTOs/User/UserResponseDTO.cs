@@ -43,5 +43,7 @@ namespace Application.DTOs.ResponseDTOs.User
         /// The date and time when the user account was created.
         /// </summary>
         public DateTime? CreatedAt { get; set; }
+
+        public string? Status { get; set; }
     }
 }
